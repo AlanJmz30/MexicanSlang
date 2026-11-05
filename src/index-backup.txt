@@ -1,0 +1,238 @@
+
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+const expressions = [
+  {
+    phrase: '¡Qué padre!',
+    meaning: 'That’s awesome!',
+    example: '¡Qué padre está tu departamento!',
+    emoji: '😎',
+  },
+  {
+    phrase: 'No manches',
+    meaning: 'No way! / You’re kidding!',
+    example: '¿Ganaste un viaje? ¡No manches!',
+    emoji: '🤯',
+  },
+  {
+    phrase: '¡Aguas!',
+    meaning: 'Watch out!',
+    example: '¡Aguas! Viene un coche.',
+    emoji: '⚠️',
+  },
+];
+
+export default function Index() {
+  const [answer, setAnswer] = useState('');
+  const [score, setScore] = useState(0);
+  const correctAnswer = 'Watch out!';
+  return (
+
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.flag}>🇲🇽</Text>
+        <Text style={styles.title}>MexicanSlang</Text>
+        <Text style={styles.subtitle}>
+          Speak Mexican, not just Spanish.
+        </Text>
+      </View>
+
+      <View style={styles.banner}>
+        <Text style={styles.bannerTitle}>¡Qué onda! 👋</Text>
+        <Text style={styles.bannerText}>
+          Learn the real Spanish people speak in Mexico.
+        </Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>
+        Your first 3 expressions
+      </Text>
+
+      {expressions.map((item) => (
+        <View key={item.phrase} style={styles.card}>
+          <Text style={styles.emoji}>{item.emoji}</Text>
+          <Text style={styles.phrase}>{item.phrase}</Text>
+          <Text style={styles.meaning}>{item.meaning}</Text>
+          <Text style={styles.example}>{item.example}</Text>
+        </View>
+      ))}
+
+
+      <View style={styles.quiz}>
+        <Text style={styles.quizTitle}>Quick challenge 🎯</Text>
+        <Text style={styles.score}>Score: {score} ⭐</Text>
+        <Text style={styles.quizQuestion}>
+          What does “¡Aguas!” mean?
+        </Text>
+
+        {['Good luck!', 'Watch out!', 'Let’s go!'].map((option) => (
+          <Pressable
+            key={option}
+            style={[
+              styles.option,
+              answer === option && {
+                backgroundColor:
+                  option === correctAnswer ? '#DCFCE7' : '#FEE2E2',
+              },
+            ]}
+
+            onPress={() => {
+              if (answer !== '') return;
+
+              if (option === correctAnswer) {
+                setScore((previous) => previous + 1);
+              }
+
+              setAnswer(option);
+            }}
+          >
+            <Text style={styles.optionText}>{option}</Text>
+          </Pressable>
+        ))}
+
+        {answer !== '' && (
+          <Text style={styles.feedback}>
+            {answer === correctAnswer
+              ? 'Correct! 🎉 ¡Aguas! means “Watch out!”'
+              : 'Not quite! Try again.'}
+          </Text>
+        )}
+      </View>
+
+
+      <Text style={styles.footer}>
+        Made with ❤️ in Mexico
+      </Text>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F7F2',
+  },
+  header: {
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 25,
+  },
+  flag: {
+    fontSize: 38,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#14532D',
+    marginTop: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginTop: 6,
+  },
+  banner: {
+    backgroundColor: '#14532D',
+    marginHorizontal: 20,
+    padding: 22,
+    borderRadius: 20,
+    marginBottom: 28,
+  },
+  bannerTitle: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: 'bold',
+  },
+  bannerText: {
+    color: '#E5F5E9',
+    fontSize: 15,
+    marginTop: 8,
+    lineHeight: 22,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginHorizontal: 20,
+    marginBottom: 14,
+    color: '#222222',
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    marginBottom: 14,
+    padding: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8E8E0',
+  },
+  emoji: {
+    fontSize: 25,
+    marginBottom: 8,
+  },
+  phrase: {
+    fontSize: 21,
+    fontWeight: 'bold',
+    color: '#14532D',
+  },
+  meaning: {
+    fontSize: 16,
+    color: '#444444',
+    marginTop: 5,
+  },
+  example: {
+    fontSize: 14,
+    color: '#777777',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  footer: {
+    textAlign: 'center',
+    color: '#888888',
+    marginVertical: 25,
+  },
+
+  quiz: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 20,
+    padding: 20,
+    backgroundColor: '#E8F3E9',
+    borderRadius: 18,
+  },
+  quizTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#14532D',
+    marginBottom: 10,
+  },
+  quizQuestion: {
+    fontSize: 16,
+    color: '#222222',
+    marginBottom: 14,
+  },
+  option: {
+    backgroundColor: '#FFFFFF',
+    padding: 13,
+    borderRadius: 10,
+    marginBottom: 9,
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#222222',
+  },
+  feedback: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginTop: 8,
+    color: '#14532D',
+  },
+
+  score: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#14532D',
+    marginBottom: 12,
+  },
+
+});
