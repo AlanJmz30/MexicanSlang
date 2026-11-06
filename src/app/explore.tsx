@@ -192,7 +192,10 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 22,
+    width: '100%',
+    maxWidth: 920,
+    alignSelf: 'center',
+    paddingHorizontal: 22,
     paddingTop: 35,
     paddingBottom: 40,
     backgroundColor: '#FFFDF8',
@@ -217,6 +220,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   hero: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     backgroundColor: '#173D2A',
     borderRadius: 24,
     padding: 22,

@@ -1111,7 +1111,7 @@ const calendarDateKey = (day: number) =>
       );
 
       return (
-        <ScrollView style={{ flex: 1, backgroundColor: '#F7F7F2' }} contentContainerStyle={{ paddingBottom: 36 }}>
+        <ScrollView style={{ flex: 1, backgroundColor: '#F7F7F2' }} contentContainerStyle={styles.pageContent}>
           <View style={{ backgroundColor: '#14532D', paddingTop: 58, paddingBottom: 28, paddingHorizontal: 24, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}>
             <Text style={{ fontSize: 38 }}>🇲🇽</Text>
             <Text style={{ color: '#FFFFFF', fontSize: 30, fontWeight: '800', marginTop: 10 }}>Make it your Mexico</Text>
@@ -1183,7 +1183,7 @@ const calendarDateKey = (day: number) =>
     return (
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: 36 }}
+        contentContainerStyle={styles.pageContent}
       >
         <View style={{
           backgroundColor: '#14532D',
@@ -1606,7 +1606,7 @@ const calendarDateKey = (day: number) =>
     }
 
     return (
-      <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
         <Pressable onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to learning path</Text>
         </Pressable>
@@ -1730,7 +1730,7 @@ const calendarDateKey = (day: number) =>
     }
 
     return (
-      <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.container} contentContainerStyle={styles.pageContent} keyboardShouldPersistTaps="handled">
         <Pressable onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', paddingVertical: 9, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to learning path</Text>
         </Pressable>
@@ -1861,7 +1861,7 @@ const calendarDateKey = (day: number) =>
     }
 
     return (
-      <ScrollView style={styles.container} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
         <Pressable onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Volver al inicio</Text>
         </Pressable>
@@ -1995,7 +1995,9 @@ const calendarDateKey = (day: number) =>
 
       
 <View style={{
-  marginHorizontal: 20,
+  width: '100%',
+  maxWidth: 760,
+  alignSelf: 'center',
   marginBottom: 24,
   padding: 18,
   backgroundColor: '#FFFFFF',
@@ -2521,7 +2523,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F7F2',
   },
   content: {
-    paddingBottom: 20,
+    width: '100%',
+    maxWidth: 1120,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 28,
+  },
+  pageContent: {
+    width: '100%',
+    maxWidth: 1040,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 40,
   },
   header: {
     alignItems: 'center',
@@ -2544,7 +2558,9 @@ const styles = StyleSheet.create({
   },
   banner: {
     backgroundColor: '#14532D',
-    marginHorizontal: 20,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     padding: 22,
     borderRadius: 20,
     marginBottom: 24,
@@ -2561,7 +2577,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   progressHeader: {
-    marginHorizontal: 20,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     marginBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -2579,9 +2597,11 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     height: 8,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     backgroundColor: '#E0E5DD',
     borderRadius: 8,
-    marginHorizontal: 20,
     marginBottom: 20,
     overflow: 'hidden',
   },
@@ -2591,7 +2611,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   quiz: {
-    marginHorizontal: 20,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     padding: 20,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
@@ -2716,7 +2738,9 @@ const styles = StyleSheet.create({
   },
   result: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
     padding: 24,
     borderRadius: 20,
     alignItems: 'center',

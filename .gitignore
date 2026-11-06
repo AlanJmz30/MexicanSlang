@@ -41,7 +41,11 @@ example
 # generated native folders
 /ios
 /android
+
 # Environment variables
 .env
 .env.*
-!.env.example.vscode/
+!.env.example
+
+# Local editor settings
+.vscode/
