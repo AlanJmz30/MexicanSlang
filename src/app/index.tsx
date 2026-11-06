@@ -1504,6 +1504,48 @@ const calendarDateKey = (day: number) =>
             </View>
           </Pressable>
 
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ color: '#14532D', fontSize: 22, fontWeight: 'bold', marginBottom: 5 }}>
+              Practice real-life situations
+            </Text>
+            <Text style={{ color: '#64748B', fontSize: 14, lineHeight: 20, marginBottom: 13 }}>
+              Choose where you want to practice. Order food, get around, shop, and talk with locals.
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+              {[...freePracticeScenarios]
+                .sort((a, b) => getScenarioPriority(a.id, learnerGoal, learnerInterest) - getScenarioPriority(b.id, learnerGoal, learnerInterest))
+                .map((item, index) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => {
+                      setFreeScenarioIndex(index);
+                      setFreeTurnIndex(0);
+                      setFreeResponse('');
+                      setFreeSubmitted(false);
+                      setFreeShowHint(false);
+                      setFreeSessionXp(0);
+                      router.push({ pathname: '/', params: { category: 'freeconversation' } });
+                    }}
+                    style={{
+                      width: '48%',
+                      flexGrow: 1,
+                      minHeight: 104,
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 16,
+                      padding: 14,
+                      borderWidth: 1,
+                      borderColor: '#D1FAE5',
+                    }}
+                  >
+                    <Text style={{ fontSize: 25, marginBottom: 7 }}>{item.emoji}</Text>
+                    <Text style={{ color: '#14532D', fontSize: 15, fontWeight: 'bold' }}>{item.title}</Text>
+                    <Text style={{ color: '#64748B', fontSize: 12, lineHeight: 17, marginTop: 4 }} numberOfLines={2}>{item.description}</Text>
+                    <Text style={{ color: '#0F766E', fontSize: 12, fontWeight: 'bold', marginTop: 9 }}>Practice →</Text>
+                  </Pressable>
+                ))}
+            </View>
+          </View>
+
           <Pressable
             onPress={() => {
               setReviewIndex(0);
