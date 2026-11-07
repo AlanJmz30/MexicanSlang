@@ -382,6 +382,141 @@ const phraseGuides: Record<string, { meaning: string; whenToUse: string; nuance:
   },
 };
 
+
+type CultureEntry = {
+  phrase: string;
+  meaning: string;
+  context: string;
+  register: string;
+  example: string;
+  translation: string;
+  note: string;
+  category: 'Everyday slang' | 'Food & social life' | 'Useful expressions';
+};
+
+const cultureEntries: CultureEntry[] = [
+  {
+    phrase: '¿Qué onda?',
+    meaning: 'What’s up? / How’s it going?',
+    context: 'A casual greeting with friends, peers, and people you know.',
+    register: 'Informal · Friendly',
+    example: '¡Qué onda! ¿Cómo te fue ayer?',
+    translation: 'Hey! How did it go yesterday?',
+    note: 'Avoid it in formal emails or very formal first meetings. “Hola, ¿cómo está?” is more neutral.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: 'No manches',
+    meaning: 'No way! / You’re kidding!',
+    context: 'A reaction to surprising, unbelievable, or frustrating news.',
+    register: 'Informal · Mild slang',
+    example: '¿Te dieron vacaciones todo el mes? ¡No manches!',
+    translation: 'You got the whole month off? No way!',
+    note: '“No mames” is a stronger, vulgar version. Learn it to understand it, but be careful using it.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: 'Ahorita',
+    meaning: 'Right now, in a little while, or sometime soon — depending on context.',
+    context: 'Used in everyday conversation when talking about doing something soon.',
+    register: 'Neutral to informal · Context-dependent',
+    example: 'Ahorita te mando el mensaje.',
+    translation: 'I’ll send you the message in a bit.',
+    note: 'It does not always mean this exact second. If timing matters, ask “¿En cuánto tiempo?”.',
+    category: 'Useful expressions',
+  },
+  {
+    phrase: '¡Aguas!',
+    meaning: 'Watch out! / Be careful!',
+    context: 'A quick warning when someone is near a hazard or might bump into something.',
+    register: 'Informal · Warning',
+    example: '¡Aguas con el escalón!',
+    translation: 'Watch out for the step!',
+    note: 'Usually a warning, not an instruction to drink water.',
+    category: 'Useful expressions',
+  },
+  {
+    phrase: '¡Qué padre!',
+    meaning: 'That’s cool! / That’s awesome!',
+    context: 'A positive reaction to an idea, place, object, or experience.',
+    register: 'Informal · Positive',
+    example: '¡Qué padre está este lugar!',
+    translation: 'This place is so cool!',
+    note: 'Widely understood in Mexico. Other regions may prefer expressions such as “qué chido”.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: 'Chamba',
+    meaning: 'Work / job',
+    context: 'Casual conversations about your job, workload, or finding work.',
+    register: 'Informal · Common',
+    example: 'Hoy tengo mucha chamba.',
+    translation: 'I have a lot of work today.',
+    note: '“Trabajo” is the more neutral word and works in formal settings.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: 'La lana',
+    meaning: 'Money',
+    context: 'Casual conversations about paying, spending, or being short on money.',
+    register: 'Informal · Slang',
+    example: 'Ahorita no traigo lana.',
+    translation: 'I don’t have money on me right now.',
+    note: 'Literally, “lana” means wool. In this expression it means money.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: '¿Me da…?',
+    meaning: 'Could I have…? / Can I get…?',
+    context: 'A polite, common way to order food or ask a vendor for something.',
+    register: 'Polite · Everyday',
+    example: '¿Me da tres tacos, por favor?',
+    translation: 'Could I have three tacos, please?',
+    note: '“¿Me das…?” is more familiar. “¿Me da…?” is a safe, polite choice with someone you do not know.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: 'Con todo',
+    meaning: 'With all the usual toppings',
+    context: 'At many taco stands, this often means the standard toppings, such as onion and cilantro; toppings vary by place.',
+    register: 'Everyday · Food',
+    example: 'Sí, con todo, por favor.',
+    translation: 'Yes, with everything, please.',
+    note: 'If you want to leave something out, say “sin cebolla” or “sin cilantro”. Ask what is included if unsure.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: '¿Cuánto sería?',
+    meaning: 'How much would that be?',
+    context: 'A natural way to ask the total at a market, café, or shop.',
+    register: 'Polite · Everyday',
+    example: '¿Cuánto sería por todo?',
+    translation: 'How much would it be for everything?',
+    note: 'You can also ask “¿Cuánto es en total?”.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: '¡Provecho!',
+    meaning: 'Enjoy your meal!',
+    context: 'A courteous expression said to people who are eating, including people nearby.',
+    register: 'Polite · Social',
+    example: '¡Buen provecho!',
+    translation: 'Enjoy your meal!',
+    note: 'You may hear “provecho” or “buen provecho”. A simple “gracias” is a natural reply.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: '¡Va!',
+    meaning: 'Okay! / Sounds good!',
+    context: 'Agreeing to a suggestion or confirming a plan in casual conversation.',
+    register: 'Informal · Friendly',
+    example: '—Nos vemos a las seis. —¡Va!',
+    translation: '—See you at six. —Sounds good!',
+    note: 'A broadly useful casual expression. “Jalo” is more colloquial and means “I’m in”.',
+    category: 'Everyday slang',
+  },
+];
+
 type FreePracticeTurn = {
   speaker: string;
   spanishLine: string;
@@ -1546,6 +1681,30 @@ const calendarDateKey = (day: number) =>
             </View>
           </View>
 
+
+          <Pressable
+            onPress={() => router.push({ pathname: '/', params: { category: 'culture' } })}
+            style={{
+              backgroundColor: '#7C2D12',
+              borderRadius: 20,
+              padding: 20,
+              marginBottom: 18,
+            }}
+          >
+            <Text style={{ color: '#FED7AA', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>
+              EXPLORE MEXICO BEYOND THE WORDS
+            </Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'bold', marginTop: 6 }}>
+              🇲🇽 Mexican Culture
+            </Text>
+            <Text style={{ color: '#FFEDD5', fontSize: 14, lineHeight: 21, marginTop: 6 }}>
+              Discover slang, food expressions, social customs, and when a phrase feels friendly, formal, or too strong.
+            </Text>
+            <View style={{ alignSelf: 'flex-start', backgroundColor: '#FFFFFF', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, marginTop: 14 }}>
+              <Text style={{ color: '#9A3412', fontWeight: 'bold' }}>Explore culture →</Text>
+            </View>
+          </Pressable>
+
           <Pressable
             onPress={() => {
               setReviewIndex(0);
@@ -1857,6 +2016,76 @@ const calendarDateKey = (day: number) =>
         )}
 
         <Text style={{ color: '#64748B', fontSize: 13, textAlign: 'center', marginTop: 18 }}>⚡ {xp} total XP · +{freeSessionXp} XP in this practice</Text>
+      </ScrollView>
+    );
+  }
+
+
+  if (category === 'culture') {
+    const cultureGroups: CultureEntry['category'][] = [
+      'Everyday slang',
+      'Food & social life',
+      'Useful expressions',
+    ];
+
+    function speakFreeSpanish(example: string): void {
+      throw new Error('Function not implemented.');
+    }
+
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
+        <Pressable
+          onPress={() => router.replace('/')}
+          style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}
+        >
+          <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
+        </Pressable>
+
+        <View style={{ backgroundColor: '#14532D', borderRadius: 22, padding: 22, marginBottom: 22 }}>
+          <Text style={{ color: '#BBF7D0', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>LANGUAGE · CONTEXT · CULTURE</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 29, fontWeight: '800', marginTop: 8 }}>🇲🇽 Mexican Culture</Text>
+          <Text style={{ color: '#DCFCE7', fontSize: 15, lineHeight: 23, marginTop: 8 }}>
+            Learn what people mean, when they say it, and how to use it naturally and respectfully.
+          </Text>
+        </View>
+
+        <View style={{ backgroundColor: '#FFF7ED', borderColor: '#FED7AA', borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 22 }}>
+          <Text style={{ color: '#9A3412', fontWeight: 'bold', fontSize: 14 }}>A useful cultural reminder</Text>
+          <Text style={{ color: '#7C2D12', fontSize: 13, lineHeight: 20, marginTop: 5 }}>
+            Mexican Spanish varies by region, age, and situation. These are common examples, not rules that every person uses in the same way.
+          </Text>
+        </View>
+
+        {cultureGroups.map((group) => (
+          <View key={group} style={{ marginBottom: 20 }}>
+            <Text style={{ color: '#14532D', fontSize: 20, fontWeight: '800', marginBottom: 12 }}>{group}</Text>
+            {cultureEntries.filter((entry) => entry.category === group).map((entry) => (
+              <View key={entry.phrase} style={{ backgroundColor: '#FFFFFF', borderRadius: 17, padding: 17, marginBottom: 12, borderWidth: 1, borderColor: '#E5E7EB' }}>
+                <Text style={{ color: '#14532D', fontSize: 22, fontWeight: '800' }}>{entry.phrase}</Text>
+                <Text style={{ color: '#166534', fontSize: 15, fontWeight: '700', marginTop: 5 }}>{entry.meaning}</Text>
+                <View style={{ alignSelf: 'flex-start', backgroundColor: '#F1F5F9', borderRadius: 20, paddingVertical: 5, paddingHorizontal: 10, marginTop: 9 }}>
+                  <Text style={{ color: '#475569', fontSize: 11, fontWeight: '700' }}>{entry.register}</Text>
+                </View>
+                <Text style={{ color: '#64748B', fontSize: 11, fontWeight: '800', letterSpacing: 0.7, marginTop: 14 }}>WHEN YOU’LL HEAR IT</Text>
+                <Text style={{ color: '#334155', fontSize: 14, lineHeight: 21, marginTop: 4 }}>{entry.context}</Text>
+                <Text style={{ color: '#64748B', fontSize: 11, fontWeight: '800', letterSpacing: 0.7, marginTop: 13 }}>REAL-LIFE EXAMPLE</Text>
+                <Text style={{ color: '#14532D', fontSize: 15, fontWeight: '700', marginTop: 4 }}>{entry.example}</Text>
+                <Text style={{ color: '#64748B', fontSize: 13, fontStyle: 'italic', lineHeight: 19, marginTop: 3 }}>{entry.translation}</Text>
+                <View style={{ backgroundColor: '#FFFBEB', borderRadius: 11, padding: 12, marginTop: 13, borderWidth: 1, borderColor: '#FDE68A' }}>
+                  <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '800' }}>🇲🇽 CULTURAL TIP</Text>
+                  <Text style={{ color: '#78350F', fontSize: 13, lineHeight: 20, marginTop: 4 }}>{entry.note}</Text>
+                </View>
+                <Pressable
+                  onPress={() => speakFreeSpanish(entry.example)}
+                  style={{ alignSelf: 'flex-start', backgroundColor: '#DCFCE7', borderRadius: 10, paddingVertical: 9, paddingHorizontal: 12, marginTop: 12 }}
+                >
+                  <Text style={{ color: '#166534', fontWeight: 'bold' }}>🔊 Listen to the example</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        ))}
+        <Text style={styles.footer}>Made with ❤️ in Mexico by Alan</Text>
       </ScrollView>
     );
   }
