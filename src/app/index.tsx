@@ -9,6 +9,7 @@ import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -40,7 +41,88 @@ type ReviewItem = {
   addedAt: number;
 };
 
+type InteractivePracticeItem =
+  | { id: string; type: 'choice'; prompt: string; options: string[]; answer: string; explanation: string }
+  | { id: string; type: 'blank'; prompt: string; answer: string; explanation: string }
+  | { id: string; type: 'order'; prompt: string; words: string[]; answer: string; explanation: string };
+
+const interactivePracticeItems: InteractivePracticeItem[] = [
+  { id: 'choice-1', type: 'choice', prompt: 'A friend says: “¿Qué onda?”. What is a natural reply?', options: ['¡Todo bien! ¿Y tú?', 'Soy onda.', 'Tengo una onda.'], answer: '¡Todo bien! ¿Y tú?', explanation: '“¿Qué onda?” is an informal way to say “What’s up?”. “¡Todo bien! ¿Y tú?” is a natural reply.' },
+  { id: 'blank-1', type: 'blank', prompt: 'Complete the phrase: “Me _____ un café, por favor.”', answer: 'da', explanation: '“¿Me da…?” is a polite, common way to ask for something in a shop or café.' },
+  { id: 'order-1', type: 'order', prompt: 'Put the words in the correct order to say “I’m in / Count me in!”', words: ['jalo', '¡Va,', '!'], answer: '¡Va, jalo!', explanation: '“¡Va, jalo!” is a casual Mexican expression meaning “Sounds good, I’m in!”.' },
+  { id: 'choice-2', type: 'choice', prompt: 'At a taquería, how do you politely order three tacos?', options: ['Me da tres tacos, por favor.', 'Estoy tres tacos.', 'Tengo tres tacos hambre.'], answer: 'Me da tres tacos, por favor.', explanation: '“Me da…” is a natural way to order. Adding “por favor” makes it polite.' },
+  { id: 'blank-2', type: 'blank', prompt: 'Complete the expression: “No hay _____, yo invito.” (No problem, it’s on me.)', answer: 'bronca', explanation: '“No hay bronca” means “No problem” in informal Mexican Spanish.' },
+  { id: 'order-2', type: 'order', prompt: 'Build the sentence: “I went out with my friends.”', words: ['mis', 'Salí', 'amigos', 'con'], answer: 'Salí con mis amigos', explanation: 'The natural order is “Salí con mis amigos”.' },
+  { id: 'choice-3', type: 'choice', prompt: 'Someone asks “¿Cuánto es en total?”. What are they asking?', options: ['How much is it altogether?', 'Where is the bathroom?', 'What time do you close?'], answer: 'How much is it altogether?', explanation: '“¿Cuánto es en total?” asks for the total price.' },
+  { id: 'blank-3', type: 'blank', prompt: 'Complete the phrase: “Está _____, gracias.” (That’s fine, thanks.)', answer: 'bien', explanation: '“Está bien” means “It’s fine / That’s okay”.' },
+  { id: 'order-3', type: 'order', prompt: 'Build a casual agreement: “Okay, see you tomorrow.”', words: ['mañana', 'Va,', 'nos', 'vemos'], answer: 'Va, nos vemos mañana', explanation: '“Va, nos vemos mañana” is a natural, casual way to agree and say goodbye.' },
+
+  // More multiple-choice practice
+  { id: 'choice-4', type: 'choice', prompt: 'Your friend says “¡Qué padre!”. What do they mean?', options: ['That’s cool!', 'That is my dad.', 'How embarrassing!'], answer: 'That’s cool!', explanation: 'In Mexico, “¡Qué padre!” means something is great, cool, or awesome.' },
+  { id: 'choice-5', type: 'choice', prompt: 'You arrive at a friend’s place. What does “Pásale” mean?', options: ['Come in!', 'Go away!', 'Pay here!'], answer: 'Come in!', explanation: '“Pásale” is a friendly invitation to come inside or come through.' },
+  { id: 'choice-6', type: 'choice', prompt: 'Someone says “Ahorita voy”. What is the closest meaning in casual conversation?', options: ['I’ll be there in a little bit.', 'I went yesterday.', 'I never go there.'], answer: 'I’ll be there in a little bit.', explanation: '“Ahorita” is flexible in Mexico and often means soon or in a little while; the exact timing depends on context.' },
+  { id: 'choice-7', type: 'choice', prompt: 'At a shop, the cashier asks “¿Algo más?”. What are they asking?', options: ['Anything else?', 'Are you lost?', 'Do you work here?'], answer: 'Anything else?', explanation: '“¿Algo más?” is a common way to ask whether you want anything else.' },
+  { id: 'choice-8', type: 'choice', prompt: 'Your friend says “No manches”. What are they usually expressing?', options: ['Surprise or disbelief', 'That they are washing clothes', 'That they are hungry'], answer: 'Surprise or disbelief', explanation: '“No manches” is an informal Mexican expression of surprise, disbelief, or annoyance. It is casual.' },
+  { id: 'choice-9', type: 'choice', prompt: 'Which phrase means “I’m tired” in everyday Spanish?', options: ['Estoy cansado.', 'Tengo cansado.', 'Soy cansado.'], answer: 'Estoy cansado.', explanation: 'Use “estar” for a temporary state: “Estoy cansado” or “Estoy cansada”.' },
+  { id: 'choice-10', type: 'choice', prompt: 'A person says “¿Me echas la mano?”. What are they asking?', options: ['Can you give me a hand?', 'Can you throw my hand?', 'Can you lend me money?'], answer: 'Can you give me a hand?', explanation: '“Echar la mano” means to help someone.' },
+  { id: 'choice-11', type: 'choice', prompt: 'What does “Está bien padre” mean?', options: ['It’s really cool.', 'It belongs to my father.', 'It is very expensive.'], answer: 'It’s really cool.', explanation: '“Padre” is Mexican slang for something good, fun, or cool.' },
+  { id: 'choice-12', type: 'choice', prompt: 'You want to say “I don’t understand”. Which is correct?', options: ['No entiendo.', 'No entendo.', 'No entiendo nada de tú.'], answer: 'No entiendo.', explanation: '“No entiendo” is the standard, natural way to say “I don’t understand”.' },
+  { id: 'choice-13', type: 'choice', prompt: 'Your friend says “Qué pena”. What can it mean?', options: ['How embarrassing / What a shame.', 'What a delicious meal.', 'How expensive.'], answer: 'How embarrassing / What a shame.', explanation: '“Qué pena” can express embarrassment, awkwardness, or regret depending on context.' },
+  { id: 'choice-14', type: 'choice', prompt: 'Which is a natural way to ask a friend what they are doing?', options: ['¿Qué haces?', '¿Qué eres haciendo?', '¿Qué haces tú ser?'], answer: '¿Qué haces?', explanation: '“¿Qué haces?” is a natural, everyday question: “What are you doing?”.' },
+  { id: 'choice-15', type: 'choice', prompt: 'Someone says “Aguas”. What warning are they giving?', options: ['Watch out!', 'Drink some water!', 'It is raining!'], answer: 'Watch out!', explanation: '“¡Aguas!” is a common informal warning to be careful or look out.' },
+
+  // More fill-in-the-blank practice
+  { id: 'blank-4', type: 'blank', prompt: 'Complete the phrase: “¿Qué _____? ¿Todo bien?” (What’s up?)', answer: 'onda', explanation: '“¿Qué onda?” is a very common informal greeting in Mexico.' },
+  { id: 'blank-5', type: 'blank', prompt: 'Complete the phrase: “¡Qué _____! No te veía hace mucho.” (What a surprise!)', answer: 'sorpresa', explanation: '“¡Qué sorpresa!” is a natural way to express pleasant surprise.' },
+  { id: 'blank-6', type: 'blank', prompt: 'Complete the request: “¿Me puedes echar la _____?” (Can you give me a hand?)', answer: 'mano', explanation: 'The expression is “echar la mano”, meaning to help.' },
+  { id: 'blank-7', type: 'blank', prompt: 'Complete the phrase: “Tengo _____.” (I am hungry.)', answer: 'hambre', explanation: 'In Spanish, you say “tener hambre” rather than “estar hambre”.' },
+  { id: 'blank-8', type: 'blank', prompt: 'Complete the phrase: “Nos vemos al _____.” (See you later.)', answer: 'rato', explanation: '“Al rato” means later or in a little while, depending on context.' },
+  { id: 'blank-9', type: 'blank', prompt: 'Complete the phrase: “¿A qué _____ nos vemos?” (What time shall we meet?)', answer: 'hora', explanation: '“¿A qué hora…?” is the standard way to ask at what time.' },
+  { id: 'blank-10', type: 'blank', prompt: 'Complete the phrase: “Está _____, no te preocupes.” (It’s okay, don’t worry.)', answer: 'bien', explanation: '“Está bien” means “It’s okay” or “That’s fine”.' },
+  { id: 'blank-11', type: 'blank', prompt: 'Complete the phrase: “¡Qué _____ hace!” (It’s so hot!)', answer: 'calor', explanation: 'The natural expression is “¡Qué calor hace!”.' },
+  { id: 'blank-12', type: 'blank', prompt: 'Complete the phrase: “Me da _____ verte.” (I’m happy to see you.)', answer: 'gusto', explanation: '“Me da gusto verte” is a natural expression meaning “I’m happy to see you”.' },
+  { id: 'blank-13', type: 'blank', prompt: 'Complete the phrase: “¿Me _____ la cuenta, por favor?” (Can I have the bill, please?)', answer: 'trae', explanation: '“¿Me trae la cuenta?” is a polite way to ask for the bill.' },
+  { id: 'blank-14', type: 'blank', prompt: 'Complete the phrase: “No tengo _____ idea.” (I have no idea.)', answer: 'ni', explanation: 'The common expression is “No tengo ni idea”.' },
+  { id: 'blank-15', type: 'blank', prompt: 'Complete the phrase: “¡Qué _____! Está lloviendo muchísimo.” (What a mess!)', answer: 'desastre', explanation: '“¡Qué desastre!” expresses that a situation is a mess.' },
+
+  // More sentence-building practice
+  { id: 'order-4', type: 'order', prompt: 'Build the sentence: “I’m going to the market.”', words: ['mercado', 'al', 'Voy'], answer: 'Voy al mercado', explanation: '“Voy al mercado” means “I’m going to the market”.' },
+  { id: 'order-5', type: 'order', prompt: 'Build the sentence: “Can you help me?”', words: ['ayudarme', '¿Puedes', '?'], answer: '¿Puedes ayudarme?', explanation: 'The natural structure is “¿Puedes ayudarme?”.' },
+  { id: 'order-6', type: 'order', prompt: 'Build the sentence: “I don’t have cash.”', words: ['efectivo', 'No', 'traigo'], answer: 'No traigo efectivo', explanation: 'In Mexico, “No traigo efectivo” is a natural way to say you do not have cash with you.' },
+  { id: 'order-7', type: 'order', prompt: 'Build the sentence: “Where is the nearest bathroom?”', words: ['baño', 'más', '¿Dónde', 'cercano', 'está', '?', 'el'], answer: '¿Dónde está el baño más cercano?', explanation: '“¿Dónde está el baño más cercano?” is a polite, useful question when you are out.' },
+  { id: 'order-8', type: 'order', prompt: 'Build the sentence: “I really like this song.”', words: ['mucho', 'gusta', 'canción', 'Me', 'esta'], answer: 'Me gusta mucho esta canción', explanation: 'Use “me gusta” for something you like; “mucho” adds emphasis.' },
+  { id: 'order-9', type: 'order', prompt: 'Build the sentence: “Let’s go eat.”', words: ['comer', 'a', 'Vamos'], answer: 'Vamos a comer', explanation: '“Vamos a + infinitive” is a common way to suggest doing something together.' },
+  { id: 'order-10', type: 'order', prompt: 'Build the sentence: “I’ll call you later.”', words: ['marco', 'Al', 'te', 'rato'], answer: 'Al rato te marco', explanation: '“Al rato te marco” is a natural, casual way to say you will call later.' },
+  { id: 'order-11', type: 'order', prompt: 'Build the sentence: “I’m looking for a good restaurant.”', words: ['restaurante', 'buscando', 'un', 'Estoy', 'buen'], answer: 'Estoy buscando un buen restaurante', explanation: '“Buen” goes before a masculine singular noun: “un buen restaurante”.' },
+  { id: 'order-12', type: 'order', prompt: 'Build the sentence: “Can you speak more slowly, please?”', words: ['más', '¿Puedes', 'despacio', 'hablar', 'por', 'favor', '?'], answer: '¿Puedes hablar más despacio por favor?', explanation: '“¿Puedes hablar más despacio, por favor?” is a useful, polite request.' },
+  { id: 'order-13', type: 'order', prompt: 'Build the sentence: “I’m having a great time.”', words: ['bien', 'pasando', 'la', 'Estoy'], answer: 'La estoy pasando bien', explanation: '“La estoy pasando bien” is a natural Mexican Spanish expression for “I’m having a great time”.' },
+  { id: 'order-14', type: 'order', prompt: 'Build the sentence: “I’ll see you at the party.”', words: ['fiesta', 'la', 'en', 'Veo', 'te'], answer: 'Te veo en la fiesta', explanation: '“Te veo en la fiesta” means “I’ll see you at the party”.' },
+  { id: 'order-15', type: 'order', prompt: 'Build the sentence: “That sounds good to me.”', words: ['suena', 'bien', 'Me'], answer: 'Me suena bien', explanation: '“Me suena bien” is a natural way to say “That sounds good to me”.' },
+];
+
 const REVIEW_STORAGE_KEY = 'mexicanSlangReviewItems';
+
+type InteractiveProgress = {
+  totalAttempts: number;
+  correctAnswers: number;
+  mistakes: { id: string; level: string; prompt: string; answer: string; date: string; attempts?: number }[];
+  completedIds: string[];
+  byLevel: Record<string, { attempts: number; correct: number }>;
+};
+
+const INTERACTIVE_PROGRESS_KEY = 'mexicanSlangInteractiveProgress';
+const EMPTY_INTERACTIVE_PROGRESS: InteractiveProgress = {
+  totalAttempts: 0,
+  correctAnswers: 0,
+  mistakes: [],
+  completedIds: [],
+  byLevel: {
+    beginner: { attempts: 0, correct: 0 },
+    intermediate: { attempts: 0, correct: 0 },
+    advanced: { attempts: 0, correct: 0 },
+  },
+};
+
 
 const conversationSteps = [
   {
@@ -391,7 +473,7 @@ type CultureEntry = {
   example: string;
   translation: string;
   note: string;
-  category: 'Everyday slang' | 'Food & social life' | 'Useful expressions';
+  category: 'Everyday slang' | 'Food & social life' | 'Useful expressions' | 'Customs & traditions' | 'Regional expressions';
 };
 
 const cultureEntries: CultureEntry[] = [
@@ -514,6 +596,146 @@ const cultureEntries: CultureEntry[] = [
     translation: '—See you at six. —Sounds good!',
     note: 'A broadly useful casual expression. “Jalo” is more colloquial and means “I’m in”.',
     category: 'Everyday slang',
+  },
+  {
+    phrase: '¿Me regalas…?',
+    meaning: 'Could I have…? / Could you give me…?',
+    context: 'A very common, polite way to ask for something in shops, cafés, and food stalls.',
+    register: 'Polite · Everyday',
+    example: '¿Me regalas un café americano, por favor?',
+    translation: 'Could I have an Americano coffee, please?',
+    note: 'It is not necessarily asking for something free. In many Mexican contexts, “regalar” is a friendly way to request a product or service you will pay for.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: '¡Buen provecho!',
+    meaning: 'Enjoy your meal!',
+    context: 'Said when people are eating, when you arrive at a table, or when you leave someone who is still eating.',
+    register: 'Polite · Social',
+    example: '¡Buen provecho! ¿Está rico?',
+    translation: 'Enjoy your meal! Is it good?',
+    note: 'You may hear “provecho” in restaurants and at shared meals. A simple “gracias” is a natural response.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: 'La cuenta, por favor',
+    meaning: 'The bill, please.',
+    context: 'Used to ask for the check at a restaurant or café.',
+    register: 'Polite · Neutral',
+    example: 'Cuando pueda, ¿me trae la cuenta, por favor?',
+    translation: 'When you have a moment, could you bring me the bill, please?',
+    note: 'In a relaxed restaurant, getting the server’s attention politely is better than snapping your fingers or shouting.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: 'La sobremesa',
+    meaning: 'Time spent talking at the table after a meal.',
+    context: 'A social moment when family or friends keep chatting after they finish eating.',
+    register: 'Neutral · Cultural term',
+    example: 'Después de comer nos quedamos de sobremesa.',
+    translation: 'After eating, we stayed at the table chatting.',
+    note: 'The meal is over, but the gathering is not. Conversation can be as important as the food.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: 'En un tianguis',
+    meaning: 'At an open-air street market.',
+    context: 'Tianguis are markets set up on particular streets and days, often selling food, clothes, household goods, and more.',
+    register: 'Everyday · Cultural term',
+    example: 'Los martes pongo un puesto en el tianguis.',
+    translation: 'On Tuesdays I set up a stall at the street market.',
+    note: 'You can ask “¿Cuánto cuesta?” and, where bargaining is customary, “¿Cuál es su mejor precio?”. Not every seller negotiates.',
+    category: 'Food & social life',
+  },
+  {
+    phrase: '¿Qué rollo?',
+    meaning: 'What’s up? / What’s going on?',
+    context: 'An informal greeting or a way to ask what is happening.',
+    register: 'Informal · Casual',
+    example: '¿Qué rollo? ¿Sí vas a venir al partido?',
+    translation: 'What’s up? Are you coming to the game?',
+    note: 'Very casual. With someone you do not know well, start with “Hola, ¿cómo está?”.',
+    category: 'Regional expressions',
+  },
+  {
+    phrase: 'Está chido',
+    meaning: 'It’s cool / It’s great.',
+    context: 'A casual positive reaction, especially common in central Mexico and widely understood elsewhere.',
+    register: 'Informal · Slang',
+    example: 'Está chido el mural de esa calle.',
+    translation: 'The mural on that street is cool.',
+    note: '“Chido” is informal. “Está muy bien” is a safer neutral alternative.',
+    category: 'Regional expressions',
+  },
+  {
+    phrase: 'Ocupo…',
+    meaning: 'I need…',
+    context: 'Used by many speakers in western and northern Mexico as an everyday alternative to “necesito”.',
+    register: 'Informal to neutral · Regional usage',
+    example: 'Ocupo comprar agua antes de salir.',
+    translation: 'I need to buy water before leaving.',
+    note: 'You will hear it in places such as Jalisco, but usage varies. “Necesito” is understood throughout the Spanish-speaking world.',
+    category: 'Regional expressions',
+  },
+  {
+    phrase: '¡Arre!',
+    meaning: 'Okay! / Let’s do it!',
+    context: 'A very informal expression of agreement or enthusiasm, associated especially with northern and northwestern speech but heard elsewhere too.',
+    register: 'Very informal · Regional',
+    example: '¿Nos vemos a las ocho? —¡Arre!',
+    translation: 'Shall we meet at eight? —Sounds good!',
+    note: 'Use it with friends who speak casually. It may sound out of place in formal or professional situations.',
+    category: 'Regional expressions',
+  },
+  {
+    phrase: '¿Mande?',
+    meaning: 'Pardon? / What was that?',
+    context: 'A polite response when you did not hear or understand someone, often used instead of “¿Qué?”.',
+    register: 'Polite · Everyday',
+    example: '¿Mande? No alcancé a escuchar.',
+    translation: 'Pardon? I didn’t quite hear you.',
+    note: 'It is common in Mexico, but preferences differ by person and region. “¿Cómo?” or “¿Perdón?” also work.',
+    category: 'Regional expressions',
+  },
+  {
+    phrase: 'Las posadas',
+    meaning: 'Community celebrations held in the days before Christmas.',
+    context: 'Often include songs, food, a piñata, and time with family, neighbors, or friends.',
+    register: 'Cultural · Seasonal',
+    example: 'El viernes tenemos posada en la oficina.',
+    translation: 'We have a Christmas posada at the office on Friday.',
+    note: 'Traditions vary by family and community. Some posadas are religious; others are mostly social gatherings.',
+    category: 'Customs & traditions',
+  },
+  {
+    phrase: 'Día de Muertos',
+    meaning: 'A tradition of remembering and honoring loved ones who have died.',
+    context: 'Families may create ofrendas, visit cemeteries, share food, and tell stories about relatives.',
+    register: 'Cultural · Commemorative',
+    example: 'En mi casa ponemos una ofrenda para recordar a la familia.',
+    translation: 'At home we set up an altar to remember our family.',
+    note: 'Practices differ across Mexico. It is not simply “Mexican Halloween”; approach the tradition with respect and curiosity.',
+    category: 'Customs & traditions',
+  },
+  {
+    phrase: '¿Te invito algo?',
+    meaning: 'Can I get you something? / Would you like me to treat you?',
+    context: 'A friendly offer to buy someone a drink, snack, or small item.',
+    register: 'Friendly · Social',
+    example: 'Voy por un café, ¿te invito algo?',
+    translation: 'I’m going to get a coffee; can I get you something?',
+    note: 'It is an offer, not an obligation. A simple “gracias, qué amable” is a natural response.',
+    category: 'Customs & traditions',
+  },
+  {
+    phrase: 'Saludar de beso',
+    meaning: 'To greet someone with a cheek kiss.',
+    context: 'In some social circles, people greet friends or relatives with a cheek kiss; others prefer a handshake, hug, or verbal greeting.',
+    register: 'Social custom · Context-dependent',
+    example: 'Cuando llegué, saludé de beso a mis amigas.',
+    translation: 'When I arrived, I greeted my friends with a cheek kiss.',
+    note: 'Do not assume everyone wants physical contact. Follow the other person’s lead and respect personal boundaries.',
+    category: 'Customs & traditions',
   },
 ];
 
@@ -759,12 +981,103 @@ function ConfettiPiece({
   );
 }
 
+const SHOP_AVATARS = [
+  { id: 'avatar_default', name: 'Explorador', emoji: '🧑‍🎤', price: 0, category: 'Personajes', description: 'Tu avatar inicial.' },
+  // Comida
+  { id: 'avatar_taco', name: 'Taquero legendario', emoji: '🌮', price: 20, category: 'Comida', description: 'Listo para dominar cualquier taquería.' },
+  { id: 'food_torta', name: 'Torta ahogada', emoji: '🥪', price: 75, category: 'Comida', description: 'Con personalidad bien tapatía.' },
+  { id: 'food_elote', name: 'Elote callejero', emoji: '🌽', price: 150, category: 'Comida', description: 'El clásico de cualquier paseo.' },
+  { id: 'food_chile', name: 'Chile picante', emoji: '🌶️', price: 350, category: 'Comida', description: 'Para quienes hablan sin miedo.' },
+  { id: 'food_aguas', name: 'Aguas frescas', emoji: '🥤', price: 900, category: 'Comida', description: 'Refrescante y muy mexicano.' },
+  { id: 'food_mole', name: 'Maestro del mole', emoji: '🍲', price: 2500, category: 'Comida', description: 'Un sabor digno de leyenda.' },
+  // Animales
+  { id: 'avatar_ajolote', name: 'Ajolote', emoji: '🦎', price: 35, category: 'Animales', description: 'Un compañero muy mexicano.' },
+  { id: 'animal_xolo', name: 'Xoloitzcuintle', emoji: '🐕', price: 180, category: 'Animales', description: 'Guardián de espíritu mexicano.' },
+  { id: 'animal_jaguar', name: 'Jaguar', emoji: '🐆', price: 750, category: 'Animales', description: 'Ágil, elegante y poderoso.' },
+  { id: 'animal_eagle', name: 'Águila real', emoji: '🦅', price: 1800, category: 'Animales', description: 'Domina desde las alturas.' },
+  { id: 'animal_quetzal', name: 'Quetzal', emoji: '🦜', price: 4500, category: 'Animales', description: 'Un tesoro de colores.' },
+  // Cultura
+  { id: 'avatar_mariachi', name: 'Mariachi', emoji: '🎺', price: 250, category: 'Cultura', description: 'Que nunca falte la música.' },
+  { id: 'culture_catrina', name: 'Catrina', emoji: '💀', price: 600, category: 'Cultura', description: 'Elegancia para celebrar nuestras tradiciones.' },
+  { id: 'culture_danza', name: 'Danza folklórica', emoji: '💃', price: 1200, category: 'Cultura', description: 'Color y tradición en cada paso.' },
+  { id: 'culture_charro', name: 'Charro', emoji: '🤠', price: 3000, category: 'Cultura', description: 'Orgullo y tradición mexicana.' },
+  { id: 'culture_calavera', name: 'Calavera de oro', emoji: '☠️', price: 4500, category: 'Cultura', description: 'Una pieza especial de colección.' },
+  // Personajes
+  { id: 'avatar_luchador', name: 'Luchador', emoji: '🤼', price: 500, category: 'Personajes', description: 'Aprende español con máscara y actitud.' },
+  { id: 'character_chilango', name: 'Chilango', emoji: '🧢', price: 1000, category: 'Personajes', description: 'Siempre encuentra qué hacer en la ciudad.' },
+  { id: 'character_explorer', name: 'Exploradora', emoji: '🧭', price: 2200, category: 'Personajes', description: 'Lista para recorrer todo México.' },
+  { id: 'character_chef', name: 'Chef mexicano', emoji: '👨‍🍳', price: 4000, category: 'Personajes', description: 'Una leyenda entre los fogones.' },
+  // Legendarios
+  { id: 'legend_quetzalcoatl', name: 'Quetzalcóatl', emoji: '🐉', price: 4000, category: 'Legendarios', description: 'Una figura mítica para estudiantes expertos.' },
+  { id: 'legend_sun', name: 'Sol azteca', emoji: '☀️', price: 4500, category: 'Legendarios', description: 'Brilla como una leyenda.' },
+  { id: 'legend_gold', name: 'Máscara de oro', emoji: '🏆', price: 5000, category: 'Legendarios', description: 'La recompensa más exclusiva de la tienda.' },
+];
+
+const SHOP_CATEGORIES = ['Todos', 'Comida', 'Animales', 'Cultura', 'Personajes', 'Legendarios', 'Logros'];
+
+const NEGATIVE_ACHIEVEMENTS = [
+  { id: 'GUERO 😅', name: 'GUERO', emoji: '😅', requirement: 'Alcanza 3 errores en total', description: 'Todavía te falta barrio. ¡Sigue practicando!', color: '#FEF3C7', border: '#F59E0B' },
+  { id: 'MEXICA-NO! 🇲🇽', name: 'MEXICA-NO!', emoji: '🇲🇽', requirement: 'Alcanza 10 errores en total', description: 'Ya llevas varios tropiezos. ¡No te rindas!', color: '#DBEAFE', border: '#60A5FA' },
+  { id: 'GRINGO 🌵', name: 'GRINGO', emoji: '🌵', requirement: 'Alcanza 25 errores en total', description: 'Una leyenda de los errores. ¡A estudiar!', color: '#FEE2E2', border: '#EF4444' },
+];
+
 export default function Index() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
 
   const [score, setScore] = useState(0);
   const [xp, setXp] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [coinsLoaded, setCoinsLoaded] = useState(false);
+  const [shopVisible, setShopVisible] = useState(false);
+  const [shopLoaded, setShopLoaded] = useState(false);
+  const [selectedShopCategory, setSelectedShopCategory] = useState('Todos');
+  const [ownedShopItems, setOwnedShopItems] = useState<string[]>(['avatar_default']);
+  const [equippedAvatar, setEquippedAvatar] = useState('avatar_default');
   const level = Math.floor(xp / 100) + 1;
+
+  function showMexicanFeedback(isCorrect: boolean) {
+    const positiveMessages = [
+      'Te crees muy salsa 😎', 'Ahí la llevas 🔥', '¡Te sientes un chingo!',
+      'No estás tan wey 😂', '¡Ah, cabrón! 👀', '¡Míralooo! 😏',
+      'Y yo que creía que no sabías ni madres…', '¡Qué chingón! 🇲🇽',
+      'Vas bien, mi chingón 💪',
+    ];
+    const challengeMessages = [
+      'Ah, tas bien wey 😅', 'Creo que un niño podría hacerlo mejor que tú 😂',
+      '¿Has considerado dedicarte a otra cosa? 🤔', 'Ya no estás tan cabrón…',
+      'Puro pájaro hablador 🐦', '¡No sabes ni madres! A darle otra vez.',
+    ];
+
+    if (isCorrect) {
+      setMistakeStreak(0);
+    } else {
+      const nextStreak = mistakeStreak + 1;
+      const nextTotal = totalMistakes + 1;
+      setMistakeStreak(nextStreak);
+      setTotalMistakes(nextTotal);
+      setCoins((previous) => previous - nextStreak);
+      const achievement = nextTotal >= 25 ? 'GRINGO 🌵' : nextTotal >= 10 ? 'MEXICA-NO! 🇲🇽' : nextTotal >= 3 ? 'GUERO 😅' : '';
+      if (achievement && !negativeAchievements.includes(achievement)) {
+        const updated = [...negativeAchievements, achievement];
+        setNegativeAchievements(updated);
+        AsyncStorage.setItem('mexicanSlangNegativeAchievements', JSON.stringify(updated)).catch(() => {});
+        setMexicanFeedbackMessage(`Logro negativo desbloqueado: ${achievement}`);
+        setFeedbackModalVisible(true);
+        return;
+      }
+    }
+
+    // Popup ocasional: evita interrumpir cada respuesta.
+    if (Math.random() > 0.72) {
+      setMexicanFeedbackMessage('');
+      setFeedbackModalVisible(false);
+      return;
+    }
+    const messages = isCorrect ? positiveMessages : challengeMessages;
+    setMexicanFeedbackMessage(messages[Math.floor(Math.random() * messages.length)]);
+    setFeedbackModalVisible(true);
+  }
+
   const xpInLevel = xp % 100;
   const [bestScore, setBestScore] = useState(0);
   const [completedLessons, setCompletedLessons] = useState(0);
@@ -778,6 +1091,12 @@ export default function Index() {
   const [unlockedBadgeName, setUnlockedBadgeName] = useState('');
   const [perfectLessonBadge, setPerfectLessonBadge] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState('');
+  const [mexicanFeedbackMessage, setMexicanFeedbackMessage] = useState('');
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [mistakeStreak, setMistakeStreak] = useState(0);
+  const [totalMistakes, setTotalMistakes] = useState(0);
+  const [totalMistakesLoaded, setTotalMistakesLoaded] = useState(false);
+  const [negativeAchievements, setNegativeAchievements] = useState<string[]>([]);
   const [finished, setFinished] = useState(false);
   const [conversationScenario, setConversationScenario] = useState(0);
   const [conversationStep, setConversationStep] = useState(0);
@@ -792,6 +1111,21 @@ export default function Index() {
   const [freeSubmitted, setFreeSubmitted] = useState(false);
   const [freeShowHint, setFreeShowHint] = useState(false);
   const [freeSessionXp, setFreeSessionXp] = useState(0);
+  type InteractiveLevel = 'beginner' | 'intermediate' | 'advanced';
+  const [interactiveLevel, setInteractiveLevel] = useState<InteractiveLevel | null>(null);
+  const levels: InteractiveLevel[] = [
+    'beginner',
+    'intermediate',
+    'advanced',
+  ];
+  const [interactiveIndex, setInteractiveIndex] = useState(0);
+  const [interactiveAnswer, setInteractiveAnswer] = useState('');
+  const [interactiveBlankAnswer, setInteractiveBlankAnswer] = useState('');
+  const [interactiveOrderedWords, setInteractiveOrderedWords] = useState<string[]>([]);
+  const [interactiveCorrectCount, setInteractiveCorrectCount] = useState(0);
+  const [interactiveAnswered, setInteractiveAnswered] = useState(false);
+  const [interactiveSessionXp, setInteractiveSessionXp] = useState(0);
+  const [interactiveProgress, setInteractiveProgress] = useState<InteractiveProgress>(EMPTY_INTERACTIVE_PROGRESS);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [learnerLevel, setLearnerLevel] = useState('beginner');
@@ -800,6 +1134,27 @@ export default function Index() {
   const { category } = useLocalSearchParams<{ category?: string }>();
   const router = useRouter();
   const rewardClaimed = useRef(false);
+
+  useEffect(() => {
+    const loadInteractiveProgress = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(INTERACTIVE_PROGRESS_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as Partial<InteractiveProgress>;
+          setInteractiveProgress({
+            ...EMPTY_INTERACTIVE_PROGRESS,
+            ...parsed,
+            byLevel: { ...EMPTY_INTERACTIVE_PROGRESS.byLevel, ...(parsed.byLevel ?? {}) },
+            mistakes: Array.isArray(parsed.mistakes) ? parsed.mistakes : [],
+            completedIds: Array.isArray(parsed.completedIds) ? parsed.completedIds : [],
+          });
+        }
+      } catch (error) {
+        console.log('Error loading interactive practice progress:', error);
+      }
+    };
+    loadInteractiveProgress();
+  }, []);
 
   useEffect(() => {
     const loadLearnerProfile = async () => {
@@ -915,6 +1270,91 @@ export default function Index() {
     loadXP();
   }, []);
 
+  useEffect(() => {
+    const loadCoins = async () => {
+      try {
+        const savedCoins = await AsyncStorage.getItem('mexicanSlangCoins');
+        setCoins(Number(savedCoins ?? 0));
+      } catch (error) {
+        console.log('Error al cargar monedas:', error);
+      } finally {
+        setCoinsLoaded(true);
+      }
+    };
+    loadCoins();
+  }, []);
+
+  useEffect(() => {
+    if (!coinsLoaded) return;
+    AsyncStorage.setItem('mexicanSlangCoins', String(coins)).catch((error) => {
+      console.log('Error al guardar monedas:', error);
+    });
+  }, [coins, coinsLoaded]);
+
+  useEffect(() => {
+    const loadShop = async () => {
+      try {
+        const savedOwned = await AsyncStorage.getItem('mexicanSlangShopOwned');
+        const savedAvatar = await AsyncStorage.getItem('mexicanSlangEquippedAvatar');
+        if (savedOwned) setOwnedShopItems(JSON.parse(savedOwned));
+        if (savedAvatar) setEquippedAvatar(savedAvatar);
+      } catch (error) {
+        console.log('Error al cargar la tienda:', error);
+      } finally {
+        setShopLoaded(true);
+      }
+    };
+    loadShop();
+  }, []);
+
+  useEffect(() => {
+    if (!shopLoaded) return;
+    AsyncStorage.setItem('mexicanSlangShopOwned', JSON.stringify(ownedShopItems)).catch((error) => {
+      console.log('Error al guardar artículos de la tienda:', error);
+    });
+  }, [ownedShopItems]);
+
+  useEffect(() => {
+    if (!shopLoaded) return;
+    AsyncStorage.setItem('mexicanSlangEquippedAvatar', equippedAvatar).catch((error) => {
+      console.log('Error al guardar el avatar:', error);
+    });
+  }, [equippedAvatar]);
+
+  function buyOrEquipAvatar(item: typeof SHOP_AVATARS[number]) {
+    if (ownedShopItems.includes(item.id)) {
+      setEquippedAvatar(item.id);
+      return;
+    }
+    if (coins < item.price) return;
+    setCoins((previous) => previous - item.price);
+    setOwnedShopItems((previous) => [...previous, item.id]);
+    setEquippedAvatar(item.id);
+  }
+
+  function earnCoins(amount: number) {
+    setCoins((previous) => previous + amount);
+  }
+
+
+
+  useEffect(() => {
+    AsyncStorage.getItem('mexicanSlangNegativeAchievements').then((saved) => {
+      if (saved) {
+        const validIds = new Set(NEGATIVE_ACHIEVEMENTS.map((item) => item.id));
+        setNegativeAchievements((JSON.parse(saved) as string[]).filter((id) => validIds.has(id)));
+      }
+    }).catch(() => {});
+    AsyncStorage.getItem('mexicanSlangTotalMistakes').then((saved) => {
+      if (saved) setTotalMistakes(Number(saved) || 0);
+      setTotalMistakesLoaded(true);
+    }).catch(() => setTotalMistakesLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    if (!totalMistakesLoaded) return;
+    AsyncStorage.setItem('mexicanSlangTotalMistakes', String(totalMistakes)).catch(() => {});
+  }, [totalMistakes, totalMistakesLoaded]);
 
 
   useFocusEffect(
@@ -971,46 +1411,48 @@ export default function Index() {
     rewardClaimed.current = false;
   }, [category]);
 
-  
-const loadPracticeDays = async () => {
-  try {
-    const savedDays = await AsyncStorage.getItem(
-      'mexicanSlangPracticeDays'
-    );
-    setPracticeDays(savedDays ? JSON.parse(savedDays) : []);
-    const savedCategories = await AsyncStorage.getItem('mexicanSlangCompletedCategories');
-    setCompletedCategories(savedCategories ? JSON.parse(savedCategories) : []);
-  } catch (error) {
-    console.log('Error al cargar los días de práctica:', error);
-  }
-};
 
-useFocusEffect(
-  useCallback(() => {
-    loadPracticeDays();
-  }, [])
-);
+  const loadPracticeDays = async () => {
+    try {
+      const savedDays = await AsyncStorage.getItem(
+        'mexicanSlangPracticeDays'
+      );
+      setPracticeDays(savedDays ? JSON.parse(savedDays) : []);
+      const savedCategories = await AsyncStorage.getItem('mexicanSlangCompletedCategories');
+      setCompletedCategories(savedCategories ? JSON.parse(savedCategories) : []);
+    } catch (error) {
+      console.log('Error al cargar los días de práctica:', error);
+    }
+  };
 
-const calendarYear = calendarMonth.getFullYear();
-const calendarMonthIndex = calendarMonth.getMonth();
-const monthName = calendarMonth.toLocaleDateString('es-MX', {
-  month: 'long',
-  year: 'numeric',
-});
+  useFocusEffect(
+    useCallback(() => {
+      loadPracticeDays();
+    }, [])
+  );
 
-const firstWeekday =
-  new Date(calendarYear, calendarMonthIndex, 1).getDay();
+  const calendarYear = calendarMonth.getFullYear();
+  const calendarMonthIndex = calendarMonth.getMonth();
+  const monthName = calendarMonth.toLocaleDateString('es-MX', {
+    month: 'long',
+    year: 'numeric',
+  });
 
-const daysInMonth =
-  new Date(calendarYear, calendarMonthIndex + 1, 0).getDate();
+  const firstWeekday =
+    new Date(calendarYear, calendarMonthIndex, 1).getDay();
 
-const calendarCells = [
-  ...Array(firstWeekday).fill(0),
-  ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
-];
+  const daysInMonth =
+    new Date(calendarYear, calendarMonthIndex + 1, 0).getDate();
 
-const calendarDateKey = (day: number) =>
-  `${calendarYear}-${String(calendarMonthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const calendarCells = [
+    ...Array(firstWeekday).fill(0),
+    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
+
+
+  ];
+
+  const calendarDateKey = (day: number) =>
+    `${calendarYear}-${String(calendarMonthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
 
   const activeQuestions =
@@ -1030,10 +1472,12 @@ const calendarDateKey = (day: number) =>
     if (selectedAnswer !== '') return;
 
     setSelectedAnswer(option);
+    showMexicanFeedback(option === question.correct);
 
     if (option === question.correct) {
       setScore((previous) => previous + 1);
       setXp((previous) => previous + 10);
+      earnCoins(1);
     } else {
       const categoryName = category ?? 'basics';
       const reviewItem: ReviewItem = {
@@ -1050,10 +1494,10 @@ const calendarDateKey = (day: number) =>
       const existing = reviewItems.find((item) => item.id === reviewItem.id);
       const updated = existing
         ? reviewItems.map((item) =>
-            item.id === reviewItem.id
-              ? { ...item, attempts: item.attempts + 1 }
-              : item
-          )
+          item.id === reviewItem.id
+            ? { ...item, attempts: item.attempts + 1 }
+            : item
+        )
         : [...reviewItems, reviewItem];
       void persistReviewItems(updated);
     }
@@ -1181,6 +1625,7 @@ const calendarDateKey = (day: number) =>
     const newCompletedLessons = completedLessons + 1;
     const newXP = xp + 20;
     setXp(newXP);
+    earnCoins(5);
 
     try {
       await AsyncStorage.setItem(
@@ -1226,7 +1671,7 @@ const calendarDateKey = (day: number) =>
     setFinished(false);
   }
 
-  
+
   if (!category) {
     if (!profileLoaded) {
       return (
@@ -1349,8 +1794,46 @@ const calendarDateKey = (day: number) =>
           </Text>
 
           <View style={{
+            alignSelf: 'flex-end',
             flexDirection: 'row',
-            marginTop: 22,
+            alignItems: 'center',
+            backgroundColor: '#FFFFFF',
+            borderRadius: 22,
+            paddingVertical: 8,
+            paddingHorizontal: 13,
+            marginTop: 16,
+          }}>
+            <Image
+              source={{ uri: 'https://www.banxico.org.mx/multimedia/C_mon_1.png' }}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                marginRight: 8,
+              }}
+              resizeMode="contain"
+              accessibilityLabel="Moneda mexicana real de un peso"
+            />
+            <Text style={{ color: '#14532D', fontWeight: '800', fontSize: 16 }}>{coins}</Text>
+            <Text style={{ color: '#64748B', fontSize: 12, marginLeft: 5 }}>pesos</Text>
+          </View>
+
+          <Pressable
+            onPress={() => setShopVisible(true)}
+            style={{ alignSelf: 'flex-end', backgroundColor: '#FDE68A', borderRadius: 13, paddingVertical: 10, paddingHorizontal: 15, marginTop: 10, flexDirection: 'row', alignItems: 'center' }}
+          >
+            <Text style={{ fontSize: 17, marginRight: 7 }}>🛍️</Text>
+            <Text style={{ color: '#78350F', fontWeight: '800', fontSize: 13 }}>Tienda de recompensas</Text>
+          </Pressable>
+
+          <View style={{ alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', marginTop: 7 }}>
+            <Text style={{ fontSize: 18, marginRight: 5 }}>{SHOP_AVATARS.find((item) => item.id === equippedAvatar)?.emoji ?? '🧑‍🎤'}</Text>
+            <Text style={{ color: '#D1FAE5', fontSize: 11 }}>Tu avatar</Text>
+          </View>
+
+          <View style={{
+            flexDirection: 'row',
+            marginTop: 14,
             gap: 10,
           }}>
             <View style={{
@@ -1463,120 +1946,120 @@ const calendarDateKey = (day: number) =>
               (item.id === 'slang' && !completedCategories.includes('basics')) ||
               (item.id === 'street' &&
                 (!completedCategories.includes('basics') ||
-                 !completedCategories.includes('slang')));
+                  !completedCategories.includes('slang')));
             const isAvailable = !isLocked;
             const progress = isCompleted ? 100 : 0;
 
             return (
-            <View key={item.id} style={{
-              backgroundColor: '#FFFFFF',
-              borderRadius: 20,
-              padding: 18,
-              marginBottom: 16,
-              borderWidth: 1,
-              borderColor: '#E5E7EB',
-            }}>
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
+              <View key={item.id} style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: 20,
+                padding: 18,
+                marginBottom: 16,
+                borderWidth: 1,
+                borderColor: '#E5E7EB',
               }}>
                 <View style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 18,
-                  backgroundColor: item.color,
-                  justifyContent: 'center',
+                  flexDirection: 'row',
                   alignItems: 'center',
                 }}>
-                  <Text style={{ fontSize: 30 }}>{item.emoji}</Text>
+                  <View style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 18,
+                    backgroundColor: item.color,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                    <Text style={{ fontSize: 30 }}>{item.emoji}</Text>
+                  </View>
+
+                  <View style={{ flex: 1, marginLeft: 14 }}>
+                    <Text style={{
+                      fontSize: 11,
+                      color: item.accent,
+                      fontWeight: 'bold',
+                      letterSpacing: 1,
+                    }}>
+                      LEVEL {item.number}
+                    </Text>
+
+                    <Text style={{
+                      fontSize: 19,
+                      color: '#14532D',
+                      fontWeight: 'bold',
+                      marginTop: 3,
+                    }}>
+                      {item.title}
+                    </Text>
+
+                    <Text style={{
+                      fontSize: 12,
+                      color: '#64748B',
+                      marginTop: 4,
+                    }}>
+                      {item.subtitle}
+                    </Text>
+                  </View>
                 </View>
 
-                <View style={{ flex: 1, marginLeft: 14 }}>
-                  <Text style={{
-                    fontSize: 11,
-                    color: item.accent,
-                    fontWeight: 'bold',
-                    letterSpacing: 1,
-                  }}>
-                    LEVEL {item.number}
-                  </Text>
-
-                  <Text style={{
-                    fontSize: 19,
-                    color: '#14532D',
-                    fontWeight: 'bold',
-                    marginTop: 3,
-                  }}>
-                    {item.title}
-                  </Text>
-
-                  <Text style={{
-                    fontSize: 12,
-                    color: '#64748B',
-                    marginTop: 4,
-                  }}>
-                    {item.subtitle}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: 18,
-                marginBottom: 12,
-              }}>
-                <Text style={{ color: '#64748B', fontSize: 13 }}>
-                  📚 {item.lessons} questions
-                </Text>
-
-                <Text style={{
-                  color: isLocked ? '#94A3B8' : item.accent,
-                  fontWeight: 'bold',
-                  fontSize: 12,
+                <View style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: 18,
+                  marginBottom: 12,
                 }}>
-                  {isCompleted ? '✓ COMPLETED' : isLocked ? '🔒 LOCKED' : index === 0 ? 'START HERE' : 'UNLOCKED'}
-                </Text>
-              </View>
+                  <Text style={{ color: '#64748B', fontSize: 13 }}>
+                    📚 {item.lessons} questions
+                  </Text>
 
-              <View style={{
-                height: 7,
-                backgroundColor: '#E2E8F0',
-                borderRadius: 8,
-                overflow: 'hidden',
-                marginBottom: 14,
-              }}>
+                  <Text style={{
+                    color: isLocked ? '#94A3B8' : item.accent,
+                    fontWeight: 'bold',
+                    fontSize: 12,
+                  }}>
+                    {isCompleted ? '✓ COMPLETED' : isLocked ? '🔒 LOCKED' : index === 0 ? 'START HERE' : 'UNLOCKED'}
+                  </Text>
+                </View>
+
                 <View style={{
                   height: 7,
-                  width: `${progress}%`,
-                  backgroundColor: '#16A34A',
+                  backgroundColor: '#E2E8F0',
                   borderRadius: 8,
-                }} />
-              </View>
-
-              <Pressable
-                disabled={isLocked}
-                onPress={() => router.push({
-                  pathname: '/',
-                  params: { category: item.id },
-                })}
-                style={{
-                  backgroundColor: isLocked ? '#CBD5E1' : item.accent,
-                  paddingVertical: 14,
-                  borderRadius: 13,
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontSize: 15,
-                  fontWeight: 'bold',
+                  overflow: 'hidden',
+                  marginBottom: 14,
                 }}>
-                  {isCompleted ? 'Practice again ↻' : isLocked ? 'Complete previous level 🔒' : index === 0 ? 'Start learning →' : 'Explore level →'}
-                </Text>
-              </Pressable>
-            </View>
+                  <View style={{
+                    height: 7,
+                    width: `${progress}%`,
+                    backgroundColor: '#16A34A',
+                    borderRadius: 8,
+                  }} />
+                </View>
+
+                <Pressable
+                  disabled={isLocked}
+                  onPress={() => router.push({
+                    pathname: '/',
+                    params: { category: item.id },
+                  })}
+                  style={{
+                    backgroundColor: isLocked ? '#CBD5E1' : item.accent,
+                    paddingVertical: 14,
+                    borderRadius: 13,
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{
+                    color: '#FFFFFF',
+                    fontSize: 15,
+                    fontWeight: 'bold',
+                  }}>
+                    {isCompleted ? 'Practice again ↻' : isLocked ? 'Complete previous level 🔒' : index === 0 ? 'Start learning →' : 'Explore level →'}
+                  </Text>
+                </Pressable>
+              </View>
             );
           })}
 
@@ -1682,6 +2165,32 @@ const calendarDateKey = (day: number) =>
           </View>
 
 
+
+
+          <Pressable
+            onPress={() => {
+              setInteractiveLevel(level as unknown as InteractiveLevel);
+              setInteractiveIndex(0);
+              setInteractiveAnswer('');
+              setInteractiveBlankAnswer('');
+              setInteractiveOrderedWords([]);
+              setInteractiveCorrectCount(0);
+              setInteractiveAnswered(false);
+              setInteractiveSessionXp(0);
+              router.push({ pathname: '/', params: { category: 'interactivepractice' } });
+            }}
+            style={{ backgroundColor: '#6D28D9', borderRadius: 20, padding: 20, marginBottom: 18 }}
+          >
+            <Text style={{ color: '#EDE9FE', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>NEW · INTERACTIVE EXERCISES</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'bold', marginTop: 6 }}>🎯 Interactive practice</Text>
+            <Text style={{ color: '#F5F3FF', fontSize: 14, lineHeight: 21, marginTop: 6 }}>
+              Practice with multiple choice, fill-in-the-blank, and sentence-building challenges.
+            </Text>
+            <View style={{ alignSelf: 'flex-start', backgroundColor: '#FFFFFF', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, marginTop: 14 }}>
+              <Text style={{ color: '#6D28D9', fontWeight: 'bold' }}>Start interactive practice →</Text>
+            </View>
+          </Pressable>
+
           <Pressable
             onPress={() => router.push({ pathname: '/', params: { category: 'culture' } })}
             style={{
@@ -1761,6 +2270,77 @@ const calendarDateKey = (day: number) =>
             </Text>
           </View>
         </View>
+        <Modal visible={shopVisible} animationType="slide" transparent onRequestClose={() => setShopVisible(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.55)', justifyContent: 'flex-end' }}>
+            <View style={{ backgroundColor: '#F8FAFC', borderTopLeftRadius: 26, borderTopRightRadius: 26, maxHeight: '88%', paddingTop: 20, paddingHorizontal: 18, paddingBottom: 28 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <View>
+                  <Text style={{ color: '#14532D', fontSize: 24, fontWeight: '900' }}>Tienda mexicana</Text>
+                  <Text style={{ color: '#64748B', fontSize: 13, marginTop: 3 }}>Desbloquea avatares con tus monedas.</Text>
+                </View>
+                <Pressable onPress={() => setShopVisible(false)} style={{ backgroundColor: '#E2E8F0', width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#334155', fontSize: 20, fontWeight: '700' }}>×</Text>
+                </Pressable>
+              </View>
+              <View style={{ backgroundColor: '#DCFCE7', borderRadius: 14, padding: 12, flexDirection: 'row', alignItems: 'center', marginVertical: 12 }}>
+                <Image source={{ uri: 'https://www.banxico.org.mx/multimedia/C_mon_1.png' }} style={{ width: 30, height: 30, marginRight: 9 }} resizeMode="contain" />
+                <Text style={{ color: '#14532D', fontWeight: '800', fontSize: 16 }}>{coins} pesos disponibles</Text>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12, flexGrow: 0 }} contentContainerStyle={{ paddingVertical: 3, paddingRight: 6 }}>
+                {SHOP_CATEGORIES.map((categoryName) => (
+                  <Pressable key={categoryName} onPress={() => setSelectedShopCategory(categoryName)} style={{ paddingVertical: 9, paddingHorizontal: 14, borderRadius: 18, marginRight: 7, backgroundColor: selectedShopCategory === categoryName ? '#14532D' : '#E2E8F0' }}>
+                    <Text style={{ color: selectedShopCategory === categoryName ? '#FFFFFF' : '#475569', fontSize: 12, fontWeight: '800' }}>{categoryName}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {(selectedShopCategory === 'Logros' || (selectedShopCategory === 'Todos' && negativeAchievements.length > 0)) && (
+                  <View>
+                    <Text style={{ color: '#991B1B', fontSize: 15, fontWeight: '900', marginBottom: 10 }}>{selectedShopCategory === 'Todos' ? 'Logros negativos desbloqueados 🤡' : 'Logros negativos desbloqueables 🤡'}</Text>
+                    <Text style={{ color: '#64748B', fontSize: 12, marginBottom: 12 }}>No se compran con monedas: se consiguen al acumular errores. Tus insignias desbloqueadas se guardan en tu perfil.</Text>
+                    {NEGATIVE_ACHIEVEMENTS.filter((achievement) => selectedShopCategory === 'Logros' || negativeAchievements.includes(achievement.id)).map((achievement) => {
+                      const isUnlocked = negativeAchievements.includes(achievement.id);
+                      return (
+                        <View key={achievement.id} style={{ backgroundColor: '#FFFFFF', borderRadius: 17, padding: 14, marginBottom: 11, borderWidth: 1.5, borderColor: isUnlocked ? achievement.border : '#E2E8F0', flexDirection: 'row', alignItems: 'center', opacity: isUnlocked ? 1 : 0.72 }}>
+                          <View style={{ width: 62, height: 62, borderRadius: 18, backgroundColor: achievement.color, borderWidth: 1, borderColor: achievement.border, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: 34 }}>{achievement.emoji}</Text>
+                          </View>
+                          <View style={{ flex: 1, marginLeft: 12 }}>
+                            <Text style={{ color: '#7F1D1D', fontWeight: '900', fontSize: 15 }}>{achievement.name}</Text>
+                            <Text style={{ color: '#475569', fontSize: 12, marginTop: 3 }}>{achievement.requirement}</Text>
+                            <Text style={{ color: '#64748B', fontSize: 11, marginTop: 4 }}>{achievement.description}</Text>
+                            <Text style={{ color: isUnlocked ? '#15803D' : '#B45309', fontWeight: '900', fontSize: 11, marginTop: 6 }}>{isUnlocked ? '✓ DESBLOQUEADO' : '🔒 BLOQUEADO'}</Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+                {selectedShopCategory !== 'Logros' && SHOP_AVATARS.filter((item) => selectedShopCategory === 'Todos' || item.category === selectedShopCategory).map((item) => {
+                  const isOwned = ownedShopItems.includes(item.id);
+                  const isEquipped = equippedAvatar === item.id;
+                  const canAfford = coins >= item.price;
+                  return (
+                    <View key={item.id} style={{ backgroundColor: '#FFFFFF', borderRadius: 17, padding: 14, marginBottom: 11, borderWidth: isEquipped ? 2 : 1, borderColor: isEquipped ? '#16A34A' : '#E2E8F0', flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ width: 58, height: 58, borderRadius: 17, backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 32 }}>{item.emoji}</Text>
+                      </View>
+                      <View style={{ flex: 1, marginLeft: 12, marginRight: 8 }}>
+                        <Text style={{ color: '#14532D', fontWeight: '800', fontSize: 15 }}>{item.name}</Text>
+                        <Text style={{ color: '#64748B', fontSize: 12, marginTop: 3 }}>{item.description}</Text>
+                        <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '800', marginTop: 5 }}>{item.price === 0 ? 'Gratis' : `${item.price} pesos`}</Text>
+                      </View>
+                      <Pressable disabled={!isOwned && !canAfford} onPress={() => buyOrEquipAvatar(item)} style={{ backgroundColor: isEquipped ? '#DCFCE7' : isOwned ? '#E0E7FF' : canAfford ? '#14532D' : '#CBD5E1', paddingVertical: 10, paddingHorizontal: 11, borderRadius: 11 }}>
+                        <Text style={{ color: isEquipped ? '#166534' : isOwned ? '#3730A3' : '#FFFFFF', fontWeight: '800', fontSize: 11 }}>{isEquipped ? 'Equipado' : isOwned ? 'Equipar' : 'Comprar'}</Text>
+                      </Pressable>
+                    </View>
+                  );
+                })}
+              </ScrollView>
+              <Text style={{ color: '#94A3B8', fontSize: 11, textAlign: 'center', marginTop: 7 }}>Tus compras y tu avatar se guardan en este dispositivo.</Text>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     );
   }
@@ -1784,9 +2364,11 @@ const calendarDateKey = (day: number) =>
     function chooseConversationAnswer(option: string) {
       if (conversationAnswer !== '') return;
       setConversationAnswer(option);
+      showMexicanFeedback(option === step.correct);
       if (option === step.correct) {
         setConversationCorrect((previous) => previous + 1);
         setXp((previous) => previous + 10);
+      earnCoins(1);
       }
     }
 
@@ -1803,12 +2385,12 @@ const calendarDateKey = (day: number) =>
         setConversationAnswer('');
         return;
       }
-      router.replace('/');
+      router.replace({ pathname: '/', params: { category: undefined } });
     }
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
-        <Pressable onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
+        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to learning path</Text>
         </Pressable>
 
@@ -1855,6 +2437,7 @@ const calendarDateKey = (day: number) =>
 
         {conversationAnswer !== '' && (
           <View style={{ backgroundColor: conversationAnswer === step.correct ? '#F0FDF4' : '#FFF7ED', borderColor: conversationAnswer === step.correct ? '#86EFAC' : '#FDBA74', borderWidth: 1, borderRadius: 18, padding: 18, marginTop: 4 }}>
+            {!!mexicanFeedbackMessage && <Text style={{ color: conversationAnswer === step.correct ? '#166534' : '#9A3412', fontSize: 16, fontWeight: '900', marginBottom: 9 }}>{mexicanFeedbackMessage}</Text>}
             <Text style={{ color: conversationAnswer === step.correct ? '#166534' : '#9A3412', fontSize: 17, fontWeight: 'bold' }}>
               {conversationAnswer === step.correct ? '¡Muy bien! +10 XP 🎉' : '¡Casi! Aprende esta frase 💡'}
             </Text>
@@ -1901,9 +2484,11 @@ const calendarDateKey = (day: number) =>
     function submitFreeResponse() {
       if (!freeResponse.trim() || freeSubmitted) return;
       setFreeSubmitted(true);
+      showMexicanFeedback(matched);
       // This first version gives lightweight, local feedback; it does not send text to an AI service.
       if (matched) {
         setXp((previous) => previous + 5);
+        earnCoins(1);
         setFreeSessionXp((previous) => previous + 5);
       }
     }
@@ -1927,12 +2512,12 @@ const calendarDateKey = (day: number) =>
         resetFreeTurn();
         return;
       }
-      router.replace('/');
+      router.replace({ pathname: '/', params: { category: undefined } });
     }
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', paddingVertical: 9, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
+        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 9, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to learning path</Text>
         </Pressable>
 
@@ -2000,6 +2585,7 @@ const calendarDateKey = (day: number) =>
 
         {freeSubmitted && (
           <View style={{ backgroundColor: matched ? '#F0FDF4' : '#FFF7ED', borderColor: matched ? '#86EFAC' : '#FDBA74', borderWidth: 1, borderRadius: 18, padding: 18 }}>
+            {!!mexicanFeedbackMessage && <Text style={{ color: matched ? '#166534' : '#9A3412', fontSize: 16, fontWeight: '900', marginBottom: 9 }}>{mexicanFeedbackMessage}</Text>}
             <Text style={{ color: matched ? '#166534' : '#9A3412', fontSize: 18, fontWeight: 'bold' }}>{matched ? 'Nice! Your reply communicates the main idea. +5 XP 🎉' : 'Good effort — let’s compare the meaning and a natural example.'}</Text>
             <Text style={{ color: '#334155', fontSize: 14, lineHeight: 21, marginTop: 9 }}>{evaluation.feedback}</Text>
             <Text style={{ color: '#334155', fontSize: 14, lineHeight: 21, marginTop: 7 }}>{turn.tip}</Text>
@@ -2026,6 +2612,8 @@ const calendarDateKey = (day: number) =>
       'Everyday slang',
       'Food & social life',
       'Useful expressions',
+      'Regional expressions',
+      'Customs & traditions',
     ];
 
     function speakFreeSpanish(example: string): void {
@@ -2035,7 +2623,7 @@ const calendarDateKey = (day: number) =>
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
         <Pressable
-          onPress={() => router.replace('/')}
+          onPress={() => router.replace({ pathname: '/', params: { category: undefined } })}
           style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}
         >
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
@@ -2097,15 +2685,19 @@ const calendarDateKey = (day: number) =>
     async function answerReview(option: string) {
       if (!currentReview || reviewSelectedAnswer !== '') return;
       setReviewSelectedAnswer(option);
+      showMexicanFeedback(option === currentReview.correct);
 
       if (option === currentReview.correct) {
         setXp((previous) => previous + 5);
+        earnCoins(1);
       } else {
-        const updated = reviewItems.map((item) =>
-          item.id === currentReview.id
-            ? { ...item, attempts: item.attempts + 1 }
-            : item
-        );
+        const updated = reviewItems
+          .map((item) =>
+            item.id === currentReview.id
+              ? { ...item, attempts: item.attempts + 1 }
+              : item
+          )
+          .sort((a, b) => b.attempts - a.attempts || a.addedAt - b.addedAt);
         await persistReviewItems(updated);
       }
     }
@@ -2114,6 +2706,25 @@ const calendarDateKey = (day: number) =>
       if (reviewIsCorrect && currentReview) {
         const updated = reviewItems.filter((item) => item.id !== currentReview.id);
         await persistReviewItems(updated);
+
+        // If this was an interactive-practice mistake, remove it from that
+        // progress list too so the dashboard and Smart Review stay in sync.
+        if (currentReview.id.startsWith('interactive:')) {
+          const parts = currentReview.id.split(':');
+          const level = parts[1];
+          const exerciseId = parts.slice(2).join(':');
+          const nextProgress: InteractiveProgress = {
+            ...interactiveProgress,
+            mistakes: interactiveProgress.mistakes.filter(
+              (item) => !(item.id === exerciseId && item.level === level)
+            ),
+          };
+          setInteractiveProgress(nextProgress);
+          AsyncStorage.setItem(INTERACTIVE_PROGRESS_KEY, JSON.stringify(nextProgress)).catch((error) => {
+            console.log('Error updating reviewed interactive progress:', error);
+          });
+        }
+
         if (updated.length === 0) {
           setReviewIndex(0);
           setReviewSelectedAnswer('');
@@ -2123,7 +2734,7 @@ const calendarDateKey = (day: number) =>
       } else if (reviewIndex >= reviewItems.length - 1) {
         setReviewIndex(0);
         setReviewSelectedAnswer('');
-        router.replace('/');
+        router.replace({ pathname: '/', params: { category: undefined } });
         return;
       } else {
         setReviewIndex((previous) => previous + 1);
@@ -2133,7 +2744,7 @@ const calendarDateKey = (day: number) =>
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
-        <Pressable onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
+        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Volver al inicio</Text>
         </Pressable>
 
@@ -2152,7 +2763,7 @@ const calendarDateKey = (day: number) =>
             <Text style={{ color: '#475569', fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 8 }}>
               No tienes expresiones pendientes. Sigue practicando y las que falles aparecerán aquí.
             </Text>
-            <Pressable onPress={() => router.replace('/')} style={{ backgroundColor: '#14532D', borderRadius: 12, padding: 15, alignItems: 'center', alignSelf: 'stretch', marginTop: 20 }}>
+            <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ backgroundColor: '#14532D', borderRadius: 12, padding: 15, alignItems: 'center', alignSelf: 'stretch', marginTop: 20 }}>
               <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>Volver a aprender →</Text>
             </Pressable>
           </View>
@@ -2190,6 +2801,7 @@ const calendarDateKey = (day: number) =>
 
               {reviewSelectedAnswer !== '' && (
                 <View style={{ backgroundColor: reviewIsCorrect ? '#F0FDF4' : '#FFF7ED', padding: 15, borderRadius: 12, marginTop: 6 }}>
+                  {!!mexicanFeedbackMessage && <Text style={{ color: reviewIsCorrect ? '#166534' : '#9A3412', fontSize: 16, fontWeight: '900', marginBottom: 9 }}>{mexicanFeedbackMessage}</Text>}
                   <Text style={{ color: reviewIsCorrect ? '#166534' : '#9A3412', fontWeight: 'bold', fontSize: 17 }}>
                     {reviewIsCorrect ? '¡Correcto! +5 XP 🎉' : 'Todavía falta practicar 💪'}
                   </Text>
@@ -2209,6 +2821,301 @@ const calendarDateKey = (day: number) =>
             </View>
           </>
         )}
+      </ScrollView>
+    );
+  }
+
+  if (category === 'interactivepractice') {
+    const levelItems = interactiveLevel === 'beginner'
+      ? interactivePracticeItems.slice(0, 15)
+      : interactiveLevel === 'intermediate'
+        ? interactivePracticeItems.slice(15, 30)
+        : interactiveLevel === 'advanced'
+          ? interactivePracticeItems.slice(30, 45)
+          : [];
+    if (!interactiveLevel) {
+      const levels = [
+        { id: 'beginner', title: 'Beginner', subtitle: 'Basic words and everyday expressions', detail: 'Start with the essentials', color: '#16A34A' },
+        { id: 'intermediate', title: 'Intermediate', subtitle: 'Real conversations and common Mexican slang', detail: 'Build confidence in daily situations', color: '#D97706' },
+        { id: 'advanced', title: 'Advanced', subtitle: 'Colloquial expressions and more natural phrases', detail: 'Sound more like a local', color: '#7C3AED' },
+      ];
+      return (
+        <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
+          <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', padding: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
+            <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
+          </Pressable>
+          <Text style={{ color: '#1F2937', fontSize: 28, fontWeight: 'bold', marginBottom: 8 }}>Choose your level</Text>
+          <Text style={{ color: '#64748B', fontSize: 15, lineHeight: 22, marginBottom: 20 }}>Choose a level to start practicing Mexican Spanish. You can change it whenever you want.</Text>
+
+          <View style={{ backgroundColor: '#FFFFFF', borderRadius: 18, padding: 18, borderWidth: 1, borderColor: '#DDD6FE', marginBottom: 20 }}>
+            <Text style={{ color: '#4C1D95', fontSize: 19, fontWeight: 'bold' }}>📊 My Learning Progress</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
+              {[
+                { label: 'Completed', value: interactiveProgress.completedIds.length },
+                { label: 'Attempts', value: interactiveProgress.totalAttempts },
+                { label: 'Correct', value: interactiveProgress.correctAnswers },
+                { label: 'Accuracy', value: `${interactiveProgress.totalAttempts ? Math.round((interactiveProgress.correctAnswers / interactiveProgress.totalAttempts) * 100) : 0}%` },
+              ].map((item) => (
+                <View key={item.label} style={{ backgroundColor: '#F5F3FF', borderRadius: 12, padding: 12, minWidth: '45%', flexGrow: 1 }}>
+                  <Text style={{ color: '#6D28D9', fontSize: 21, fontWeight: 'bold' }}>{item.value}</Text>
+                  <Text style={{ color: '#64748B', fontSize: 12, marginTop: 3 }}>{item.label}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={{ color: '#4C1D95', fontWeight: 'bold', marginTop: 16, marginBottom: 8 }}>Progress by level</Text>
+            {levels.map((item) => {
+              const stats = interactiveProgress.byLevel[item.id] ?? { attempts: 0, correct: 0 };
+              const percent = stats.attempts ? Math.round((stats.correct / stats.attempts) * 100) : 0;
+              const completed = interactiveProgress.completedIds.filter((id) => id.startsWith(`${item.id}:`)).length;
+              return (
+                <View key={`progress-${item.id}`} style={{ marginBottom: 10 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <Text style={{ color: '#334155', fontSize: 13, fontWeight: '600' }}>{item.title} · {completed}/15 completed</Text>
+                    <Text style={{ color: '#64748B', fontSize: 12 }}>{percent}% accuracy</Text>
+                  </View>
+                  <View style={{ height: 7, backgroundColor: '#EDE9FE', borderRadius: 8, overflow: 'hidden' }}>
+                    <View style={{ height: 7, width: `${(completed / 15) * 100}%`, backgroundColor: item.color, borderRadius: 8 }} />
+                  </View>
+                </View>
+              );
+            })}
+            <Text style={{ color: '#64748B', fontSize: 12, marginTop: 5 }}>Mistakes to review: {interactiveProgress.mistakes.length}</Text>
+            {interactiveProgress.mistakes.length > 0 && (
+              <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#EDE9FE' }}>
+                <Text style={{ color: '#92400E', fontWeight: 'bold', fontSize: 13, marginBottom: 6 }}>Recent mistakes</Text>
+                {interactiveProgress.mistakes.slice(0, 3).map((mistake, index) => (
+                  <View key={`${mistake.level}-${mistake.id}-${index}`} style={{ marginBottom: 8 }}>
+                    <Text style={{ color: '#334155', fontSize: 13 }}>{mistake.prompt}</Text>
+                    <Text style={{ color: '#15803D', fontSize: 12, marginTop: 2 }}>Answer: {mistake.answer}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {levels.map((level) => (
+            <Pressable key={level.id} onPress={() => { setInteractiveLevel(level.id as InteractiveLevel); setInteractiveIndex(0); setInteractiveCorrectCount(0); setInteractiveSessionXp(0); setInteractiveAnswered(false); setInteractiveAnswer(''); setInteractiveBlankAnswer(''); setInteractiveOrderedWords([]); }} style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: level.color, borderRadius: 18, padding: 20, marginBottom: 14 }}>
+              <Text style={{ color: level.color, fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>{level.detail}</Text>
+              <Text style={{ color: '#1F2937', fontSize: 22, fontWeight: 'bold', marginTop: 5 }}>{level.title}</Text>
+              <Text style={{ color: '#475569', fontSize: 14, marginTop: 6 }}>{level.subtitle}</Text>
+              <Text style={{ color: level.color, fontWeight: 'bold', marginTop: 14 }}>15 exercises →</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      );
+    }
+    const exercise = levelItems[interactiveIndex];
+    const isLastExercise = interactiveIndex === levelItems.length - 1;
+    if (interactiveLevel && !exercise) {
+  return (
+    <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+        No se encontraron ejercicios
+      </Text>
+      <Text style={{ marginBottom: 20, textAlign: 'center' }}>
+        No hay ejercicios disponibles para este nivel o el índice está fuera de rango.
+      </Text>
+      <Pressable
+        onPress={() => {
+          setInteractiveIndex(0);
+          setInteractiveLevel(null);
+        }}
+        style={{ backgroundColor: '#14532D', padding: 14, borderRadius: 10 }}
+      >
+        <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>Volver a los niveles</Text>
+      </Pressable>
+    </View>
+  );
+}
+    const normalized = (value: string) => value.toLocaleLowerCase().replace(/[.!?¿¡,]/g, '').replace(/\\s+/g, ' ').trim();
+    const submittedAnswer = exercise.type === 'choice'
+      ? interactiveAnswer
+      : exercise.type === 'blank'
+        ? interactiveBlankAnswer
+        : interactiveOrderedWords.join(' ');
+    const expectedAnswer = exercise.type === 'order' ? exercise.answer.replace(/[.!?¿¡,]/g, '') : exercise.answer;
+    const isInteractiveCorrect = normalized(submittedAnswer) === normalized(expectedAnswer);
+
+    function submitInteractiveAnswer() {
+      if (!interactiveLevel) return;
+      if (interactiveAnswered || !submittedAnswer.trim()) return;
+      setInteractiveAnswered(true);
+      showMexicanFeedback(isInteractiveCorrect);
+
+      const levelStats = interactiveProgress.byLevel[interactiveLevel] ?? { attempts: 0, correct: 0 };
+      const previousMistake = interactiveProgress.mistakes.find(
+        (item) => item.id === exercise.id && item.level === interactiveLevel
+      );
+      const mistakeAttempts = (previousMistake?.attempts ?? 0) + (isInteractiveCorrect ? 0 : 1);
+
+      const nextProgress: InteractiveProgress = {
+        totalAttempts: interactiveProgress.totalAttempts + 1,
+        correctAnswers: interactiveProgress.correctAnswers + (isInteractiveCorrect ? 1 : 0),
+        completedIds: interactiveProgress.completedIds.includes(`${interactiveLevel}:${exercise.id}`)
+          ? interactiveProgress.completedIds
+          : [...interactiveProgress.completedIds, `${interactiveLevel}:${exercise.id}`],
+        mistakes: isInteractiveCorrect
+          ? interactiveProgress.mistakes.filter((item) => !(item.id === exercise.id && item.level === interactiveLevel))
+          : [
+            {
+              id: exercise.id,
+              level: interactiveLevel,
+              prompt: exercise.prompt,
+              answer: exercise.answer,
+              date: new Date().toISOString(),
+              attempts: mistakeAttempts,
+            },
+            ...interactiveProgress.mistakes.filter((item) => !(item.id === exercise.id && item.level === interactiveLevel)),
+          ].slice(0, 30),
+        byLevel: {
+          ...interactiveProgress.byLevel,
+          [interactiveLevel]: {
+            attempts: levelStats.attempts + 1,
+            correct: levelStats.correct + (isInteractiveCorrect ? 1 : 0),
+          },
+        },
+      };
+      setInteractiveProgress(nextProgress);
+      AsyncStorage.setItem(INTERACTIVE_PROGRESS_KEY, JSON.stringify(nextProgress)).catch((error) => {
+        console.log('Error saving interactive practice progress:', error);
+      });
+
+      // Connect Interactive Practice errors to the existing Smart Review queue.
+      const smartReviewId = `interactive:${interactiveLevel}:${exercise.id}`;
+      if (isInteractiveCorrect) {
+        const remainingReviewItems = reviewItems.filter((item) => item.id !== smartReviewId);
+        if (remainingReviewItems.length !== reviewItems.length) {
+          persistReviewItems(remainingReviewItems);
+        }
+      } else {
+        const distractors = interactivePracticeItems
+          .map((item) => item.answer)
+          .filter((answer, index, all) => answer !== exercise.answer && all.indexOf(answer) === index);
+        const reviewOptions = [exercise.answer, ...distractors].slice(0, 4);
+        const existingReview = reviewItems.find((item) => item.id === smartReviewId);
+        const smartReviewItem: ReviewItem = {
+          id: smartReviewId,
+          category: `Interactive Practice · ${interactiveLevel}`,
+          phrase: exercise.answer,
+          question: exercise.prompt,
+          options: reviewOptions,
+          correct: exercise.answer,
+          example: exercise.explanation,
+          attempts: mistakeAttempts,
+          addedAt: existingReview?.addedAt ?? Date.now(),
+        };
+        const updatedReviewItems = [
+          ...reviewItems.filter((item) => item.id !== smartReviewId),
+          smartReviewItem,
+        ].sort((a, b) => b.attempts - a.attempts || a.addedAt - b.addedAt);
+        persistReviewItems(updatedReviewItems);
+      }
+
+      if (isInteractiveCorrect) {
+        setInteractiveCorrectCount((previous) => previous + 1);
+        setInteractiveSessionXp((previous) => previous + 5);
+        setXp((previous) => previous + 5);
+        earnCoins(1);
+      }
+    }
+
+    function nextInteractiveExercise() {
+      if (isLastExercise) {
+        router.replace({ pathname: '/', params: { category: undefined } });
+        return;
+      }
+      setInteractiveIndex((previous) => previous + 1);
+      setInteractiveAnswer('');
+      setInteractiveBlankAnswer('');
+      setInteractiveOrderedWords([]);
+      setInteractiveAnswered(false);
+    }
+
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.pageContent} keyboardShouldPersistTaps="handled">
+        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
+          <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
+        </Pressable>
+
+        <Pressable onPress={() => { setInteractiveLevel(null); setInteractiveIndex(0); setInteractiveAnswered(false); }} style={{ alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#F3E8FF', marginBottom: 12 }}>
+          <Text style={{ color: '#6D28D9', fontWeight: 'bold' }}>Change level</Text>
+        </Pressable>
+
+        <View style={{ backgroundColor: '#6D28D9', borderRadius: 22, padding: 22, marginBottom: 18 }}>
+          <Text style={{ color: '#EDE9FE', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>MEXICAN SPANISH · SKILL BUILDER</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 27, fontWeight: 'bold', marginTop: 8 }}>🎯 Interactive practice</Text>
+          <Text style={{ color: '#F5F3FF', fontSize: 14, lineHeight: 21, marginTop: 8 }}>Three ways to practice: choose the right answer, complete a phrase, or build a sentence.</Text>
+          <View style={{ height: 7, backgroundColor: '#5B21B6', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
+            <View style={{ height: 7, width: `${((interactiveIndex + 1) / levelItems.length) * 100}%`, backgroundColor: '#FDE68A', borderRadius: 8 }} />
+          </View>
+          <Text style={{ color: '#EDE9FE', fontSize: 12, marginTop: 8 }}>Exercise {interactiveIndex + 1} of {levelItems.length} · {interactiveCorrectCount} correct</Text>
+        </View>
+
+        <View style={{ backgroundColor: '#FFFFFF', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#DDD6FE' }}>
+          <Text style={{ color: '#6D28D9', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>
+            {exercise.type === 'choice' ? '1 · MULTIPLE CHOICE' : exercise.type === 'blank' ? '2 · FILL IN THE BLANK' : '3 · BUILD THE SENTENCE'}
+          </Text>
+          <Text style={{ color: '#1F2937', fontSize: 20, fontWeight: 'bold', lineHeight: 28, marginTop: 12, marginBottom: 18 }}>{exercise.prompt}</Text>
+
+          {exercise.type === 'choice' && exercise.options.map((option) => {
+            const selected = interactiveAnswer === option;
+            const correct = option === exercise.answer;
+            return (
+              <Pressable key={option} disabled={interactiveAnswered} onPress={() => setInteractiveAnswer(option)} style={{ backgroundColor: interactiveAnswered && correct ? '#DCFCE7' : selected ? '#EDE9FE' : '#F8FAFC', borderWidth: 1, borderColor: interactiveAnswered && correct ? '#16A34A' : selected ? '#7C3AED' : '#CBD5E1', borderRadius: 12, padding: 15, marginBottom: 10 }}>
+                <Text style={{ color: '#1F2937', fontSize: 15 }}>{option}</Text>
+              </Pressable>
+            );
+          })}
+
+          {exercise.type === 'blank' && (
+            <TextInput value={interactiveBlankAnswer} onChangeText={setInteractiveBlankAnswer} editable={!interactiveAnswered} placeholder="Type the missing word…" placeholderTextColor="#94A3B8" autoCapitalize="none" style={{ borderWidth: 1, borderColor: '#C4B5FD', borderRadius: 12, padding: 15, color: '#1F2937', fontSize: 16, marginBottom: 14 }} />
+          )}
+
+          {exercise.type === 'order' && (
+            <>
+              <Text style={{ color: '#64748B', fontSize: 13, marginBottom: 10 }}>Tap the words in the correct order:</Text>
+              <View style={{ minHeight: 54, flexDirection: 'row', flexWrap: 'wrap', gap: 8, backgroundColor: '#F5F3FF', borderRadius: 12, padding: 10, marginBottom: 14 }}>
+                {interactiveOrderedWords.map((word, index) => (
+                  <Pressable key={`${word}-${index}`} disabled={interactiveAnswered} onPress={() => setInteractiveOrderedWords((previous) => previous.filter((_, wordIndex) => wordIndex !== index))} style={{ backgroundColor: '#6D28D9', borderRadius: 9, paddingVertical: 8, paddingHorizontal: 11 }}>
+                    <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>{word} ×</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                {exercise.words.map((word, index) => {
+                  const occurrence = exercise.words.slice(0, index + 1).filter((item) => item === word).length;
+                  const alreadyUsed = interactiveOrderedWords.filter((item) => item === word).length;
+                  if (occurrence !== alreadyUsed + 1) return null;
+                  return (
+                    <Pressable key={`${word}-${index}`} disabled={interactiveAnswered} onPress={() => setInteractiveOrderedWords((previous) => [...previous, word])} style={{ backgroundColor: '#EDE9FE', borderWidth: 1, borderColor: '#C4B5FD', borderRadius: 9, paddingVertical: 9, paddingHorizontal: 12 }}>
+                      <Text style={{ color: '#5B21B6', fontWeight: 'bold' }}>{word}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Pressable disabled={interactiveAnswered} onPress={() => setInteractiveOrderedWords([])} style={{ alignSelf: 'flex-start', paddingVertical: 7 }}>
+                <Text style={{ color: '#6D28D9', fontWeight: 'bold' }}>Clear sentence</Text>
+              </Pressable>
+            </>
+          )}
+
+          {!interactiveAnswered ? (
+            <Pressable disabled={!submittedAnswer.trim()} onPress={submitInteractiveAnswer} style={{ backgroundColor: submittedAnswer.trim() ? '#6D28D9' : '#C4B5FD', borderRadius: 13, padding: 15, alignItems: 'center', marginTop: 8 }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 }}>Check answer</Text>
+            </Pressable>
+          ) : (
+            <View style={{ backgroundColor: isInteractiveCorrect ? '#F0FDF4' : '#FFF7ED', borderColor: isInteractiveCorrect ? '#86EFAC' : '#FDBA74', borderWidth: 1, borderRadius: 14, padding: 15, marginTop: 10 }}>
+              {!!mexicanFeedbackMessage && <Text style={{ color: isInteractiveCorrect ? '#166534' : '#9A3412', fontSize: 16, fontWeight: '900', marginBottom: 9 }}>{mexicanFeedbackMessage}</Text>}
+              <Text style={{ color: isInteractiveCorrect ? '#166534' : '#9A3412', fontWeight: 'bold', fontSize: 18 }}>{isInteractiveCorrect ? 'Correct! +5 XP 🎉' : 'Not quite — keep learning 💪'}</Text>
+              <Text style={{ color: '#334155', fontSize: 14, lineHeight: 21, marginTop: 8 }}>Answer: {exercise.answer}</Text>
+              <Text style={{ color: '#475569', fontSize: 14, lineHeight: 21, marginTop: 6 }}>{exercise.explanation}</Text>
+              <Pressable onPress={nextInteractiveExercise} style={{ backgroundColor: '#6D28D9', borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 15 }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>{isLastExercise ? 'Finish practice →' : 'Next exercise →'}</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+        <Text style={{ color: '#64748B', fontSize: 13, textAlign: 'center', marginTop: 18 }}>⚡ {xp} total XP · +{interactiveSessionXp} XP this session</Text>
       </ScrollView>
     );
   }
@@ -2264,163 +3171,163 @@ const calendarDateKey = (day: number) =>
         </View>
       </View>
 
-      
-<View style={{
-  width: '100%',
-  maxWidth: 760,
-  alignSelf: 'center',
-  marginBottom: 24,
-  padding: 18,
-  backgroundColor: '#FFFFFF',
-  borderRadius: 20,
-  borderWidth: 1,
-  borderColor: '#E5E7EB',
-}}>
-  <Text style={{
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#14532D',
-  }}>
-    📅 Practice calendar
-  </Text>
 
-  <Text style={{
-    color: '#64748B',
-    marginTop: 5,
-    marginBottom: 16,
-  }}>
-    Cada día cuenta. ¡Sigue aprendiendo!
-  </Text>
-
-  <View style={{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  }}>
-    <Pressable onPress={() => setCalendarMonth(
-      new Date(calendarYear, calendarMonthIndex - 1, 1)
-    )}>
-      <Text style={{ fontSize: 24, paddingHorizontal: 10 }}>‹</Text>
-    </Pressable>
-
-    <Text style={{
-      fontSize: 17,
-      fontWeight: 'bold',
-      textTransform: 'capitalize',
-      color: '#14532D',
-    }}>
-      {monthName}
-    </Text>
-
-    <Pressable
-      disabled={
-        calendarYear === new Date().getFullYear() &&
-        calendarMonthIndex === new Date().getMonth()
-      }
-      onPress={() => setCalendarMonth(
-        new Date(calendarYear, calendarMonthIndex + 1, 1)
-      )}
-    >
-      <Text style={{
-        fontSize: 24,
-        paddingHorizontal: 10,
-        color:
-          calendarYear === new Date().getFullYear() &&
-          calendarMonthIndex === new Date().getMonth()
-            ? '#CBD5E1'
-            : '#14532D',
+      <View style={{
+        width: '100%',
+        maxWidth: 760,
+        alignSelf: 'center',
+        marginBottom: 24,
+        padding: 18,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
       }}>
-        ›
-      </Text>
-    </Pressable>
-  </View>
-
-  <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-    {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, index) => (
-      <View key={index} style={{ flex: 1, alignItems: 'center' }}>
-        <Text style={{ color: '#64748B', fontWeight: 'bold' }}>
-          {day}
+        <Text style={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: '#14532D',
+        }}>
+          📅 Practice calendar
         </Text>
-      </View>
-    ))}
-  </View>
 
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-    {calendarCells.map((day, index) => {
-      if (day === 0) {
-        return <View key={`empty-${index}`} style={{ width: '14.2857%', height: 43 }} />;
-      }
+        <Text style={{
+          color: '#64748B',
+          marginTop: 5,
+          marginBottom: 16,
+        }}>
+          Cada día cuenta. ¡Sigue aprendiendo!
+        </Text>
 
-      const practiced = practiceDays.includes(calendarDateKey(day));
-      const isToday =
-        calendarDateKey(day) ===
-        `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
-
-      return (
-        <View key={day} style={{
-          width: '14.2857%',
-          height: 43,
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          justifyContent: 'center',
+          marginBottom: 16,
+        }}>
+          <Pressable onPress={() => setCalendarMonth(
+            new Date(calendarYear, calendarMonthIndex - 1, 1)
+          )}>
+            <Text style={{ fontSize: 24, paddingHorizontal: 10 }}>‹</Text>
+          </Pressable>
+
+          <Text style={{
+            fontSize: 17,
+            fontWeight: 'bold',
+            textTransform: 'capitalize',
+            color: '#14532D',
+          }}>
+            {monthName}
+          </Text>
+
+          <Pressable
+            disabled={
+              calendarYear === new Date().getFullYear() &&
+              calendarMonthIndex === new Date().getMonth()
+            }
+            onPress={() => setCalendarMonth(
+              new Date(calendarYear, calendarMonthIndex + 1, 1)
+            )}
+          >
+            <Text style={{
+              fontSize: 24,
+              paddingHorizontal: 10,
+              color:
+                calendarYear === new Date().getFullYear() &&
+                  calendarMonthIndex === new Date().getMonth()
+                  ? '#CBD5E1'
+                  : '#14532D',
+            }}>
+              ›
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, index) => (
+            <View key={index} style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{ color: '#64748B', fontWeight: 'bold' }}>
+                {day}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {calendarCells.map((day, index) => {
+            if (day === 0) {
+              return <View key={`empty-${index}`} style={{ width: '14.2857%', height: 43 }} />;
+            }
+
+            const practiced = practiceDays.includes(calendarDateKey(day));
+            const isToday =
+              calendarDateKey(day) ===
+              `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+
+            return (
+              <View key={day} style={{
+                width: '14.2857%',
+                height: 43,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <View style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: practiced ? '#16A34A' : 'transparent',
+                  borderWidth: isToday && !practiced ? 2 : 0,
+                  borderColor: '#16A34A',
+                }}>
+                  <Text style={{
+                    color: practiced ? '#FFFFFF' : '#334155',
+                    fontWeight: isToday || practiced ? 'bold' : 'normal',
+                  }}>
+                    {practiced ? '✓' : day}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginTop: 14,
+          gap: 8,
         }}>
           <View style={{
-            width: 34,
-            height: 34,
-            borderRadius: 17,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: practiced ? '#16A34A' : 'transparent',
-            borderWidth: isToday && !practiced ? 2 : 0,
-            borderColor: '#16A34A',
-          }}>
-            <Text style={{
-              color: practiced ? '#FFFFFF' : '#334155',
-              fontWeight: isToday || practiced ? 'bold' : 'normal',
-            }}>
-              {practiced ? '✓' : day}
-            </Text>
-          </View>
+            width: 12,
+            height: 12,
+            borderRadius: 6,
+            backgroundColor: '#16A34A',
+          }} />
+          <Text style={{ color: '#64748B', fontSize: 12 }}>
+            Día de práctica completado
+          </Text>
         </View>
-      );
-    })}
-  </View>
 
-  <View style={{
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 14,
-    gap: 8,
-  }}>
-    <View style={{
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: '#16A34A',
-    }} />
-    <Text style={{ color: '#64748B', fontSize: 12 }}>
-      Día de práctica completado
-    </Text>
-  </View>
+        <Text style={{
+          marginTop: 12,
+          color: '#14532D',
+          fontWeight: 'bold',
+        }}>
+          🔥 Racha actual: {currentStreak} {currentStreak === 1 ? 'día' : 'días'}
+        </Text>
 
-  <Text style={{
-    marginTop: 12,
-    color: '#14532D',
-    fontWeight: 'bold',
-  }}>
-    🔥 Racha actual: {currentStreak} {currentStreak === 1 ? 'día' : 'días'}
-  </Text>
-
-  <Text style={{ color: '#64748B', marginTop: 4, fontSize: 12 }}>
-    Días practicados este mes: {
-      practiceDays.filter((date) =>
-        date.startsWith(
-          `${calendarYear}-${String(calendarMonthIndex + 1).padStart(2, '0')}-`
-        )
-      ).length
-    }
-  </Text>
-</View>
+        <Text style={{ color: '#64748B', marginTop: 4, fontSize: 12 }}>
+          Días practicados este mes: {
+            practiceDays.filter((date) =>
+              date.startsWith(
+                `${calendarYear}-${String(calendarMonthIndex + 1).padStart(2, '0')}-`
+              )
+            ).length
+          }
+        </Text>
+      </View>
 
 
       {!finished ? (
@@ -2509,6 +3416,7 @@ const calendarDateKey = (day: number) =>
 
             {selectedAnswer !== '' && (
               <View style={styles.feedback}>
+                {!!mexicanFeedbackMessage && <Text style={{ color: selectedAnswer === question.correct ? '#166534' : '#9A3412', fontSize: 16, fontWeight: '900', marginBottom: 10 }}>{mexicanFeedbackMessage}</Text>}
                 <Text style={styles.feedbackTitle}>
                   {selectedAnswer === question.correct
                     ? 'Correct! 🎉'
@@ -2641,6 +3549,13 @@ const calendarDateKey = (day: number) =>
               </Animated.View>
             </View>
           )}
+          {negativeAchievements.length > 0 && (
+            <View style={{ backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, padding: 12, borderRadius: 14, marginVertical: 10 }}>
+              <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 15 }}>Logros negativos 🤡</Text>
+              <Text style={{ color: '#7F1D1D', marginTop: 5 }}>{negativeAchievements.join('  ·  ')}</Text>
+              <Text style={{ color: '#991B1B', fontSize: 12, marginTop: 4 }}>Cada error consecutivo cuesta una moneda más. ¡A recuperarse!</Text>
+            </View>
+          )}
           {perfectLessonBadge && (
             <View
               style={{
@@ -2710,6 +3625,24 @@ const calendarDateKey = (day: number) =>
       )}
 
       <Text style={styles.footer}>Made with ❤️ in Mexico by Alan</Text>
+      <Modal
+        visible={feedbackModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFeedbackModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.62)', justifyContent: 'center', alignItems: 'center', padding: 26 }}>
+          <Animated.View entering={ZoomIn.springify().damping(8)} style={{ width: '100%', maxWidth: 330, backgroundColor: '#FFFDF5', borderRadius: 24, padding: 26, alignItems: 'center', borderWidth: 3, borderColor: '#D6A84B' }}>
+            <Text style={{ fontSize: 54 }}>{mexicanFeedbackMessage.startsWith('Logro negativo') ? '🏅' : (mexicanFeedbackMessage.includes('wey') || mexicanFeedbackMessage.includes('madres') || mexicanFeedbackMessage.includes('pájaro') ? '😅' : '🇲🇽')}</Text>
+            <Text style={{ color: '#78350F', fontSize: 21, fontWeight: '900', textAlign: 'center', marginTop: 12 }}>{mexicanFeedbackMessage}</Text>
+            <Text style={{ color: '#92400E', fontSize: 13, textAlign: 'center', marginTop: 10 }}>Saldo: {coins} pesos</Text>
+            <Pressable onPress={() => setFeedbackModalVisible(false)} style={{ marginTop: 22, backgroundColor: '#166534', paddingHorizontal: 30, paddingVertical: 12, borderRadius: 14 }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>¡Órale!</Text>
+            </Pressable>
+          </Animated.View>
+        </View>
+      </Modal>
+
       <Modal
         visible={showBadgeAnimation}
         transparent
