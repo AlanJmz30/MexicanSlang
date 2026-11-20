@@ -1,4 +1,5 @@
 
+import BackButton from '@/components/back-button';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useFocusEffect,
@@ -41,10 +42,12 @@ type ReviewItem = {
   addedAt: number;
 };
 
+type InteractivePracticeLevel = 'beginner' | 'intermediate' | 'advanced';
+
 type InteractivePracticeItem =
-  | { id: string; type: 'choice'; prompt: string; options: string[]; answer: string; explanation: string }
-  | { id: string; type: 'blank'; prompt: string; answer: string; explanation: string }
-  | { id: string; type: 'order'; prompt: string; words: string[]; answer: string; explanation: string };
+  | { id: string; level?: InteractivePracticeLevel; type: 'choice'; prompt: string; options: string[]; answer: string; explanation: string }
+  | { id: string; level?: InteractivePracticeLevel; type: 'blank'; prompt: string; answer: string; explanation: string }
+  | { id: string; level?: InteractivePracticeLevel; type: 'order'; prompt: string; words: string[]; answer: string; explanation: string };
 
 const interactivePracticeItems: InteractivePracticeItem[] = [
   { id: 'choice-1', type: 'choice', prompt: 'A friend says: “¿Qué onda?”. What is a natural reply?', options: ['¡Todo bien! ¿Y tú?', 'Soy onda.', 'Tengo una onda.'], answer: '¡Todo bien! ¿Y tú?', explanation: '“¿Qué onda?” is an informal way to say “What’s up?”. “¡Todo bien! ¿Y tú?” is a natural reply.' },
@@ -98,7 +101,72 @@ const interactivePracticeItems: InteractivePracticeItem[] = [
   { id: 'order-13', type: 'order', prompt: 'Build the sentence: “I’m having a great time.”', words: ['bien', 'pasando', 'la', 'Estoy'], answer: 'La estoy pasando bien', explanation: '“La estoy pasando bien” is a natural Mexican Spanish expression for “I’m having a great time”.' },
   { id: 'order-14', type: 'order', prompt: 'Build the sentence: “I’ll see you at the party.”', words: ['fiesta', 'la', 'en', 'Veo', 'te'], answer: 'Te veo en la fiesta', explanation: '“Te veo en la fiesta” means “I’ll see you at the party”.' },
   { id: 'order-15', type: 'order', prompt: 'Build the sentence: “That sounds good to me.”', words: ['suena', 'bien', 'Me'], answer: 'Me suena bien', explanation: '“Me suena bien” is a natural way to say “That sounds good to me”.' },
+
+  // Additional beginner exercises: useful everyday language in realistic contexts.
+  { id: 'choice-16', level: 'beginner', type: 'choice', prompt: 'You enter a small shop. Which greeting sounds polite and natural?', options: ['Buenos días, ¿cómo está?', '¿Qué transa, patrón?', 'Dame cosas ahora.'], answer: 'Buenos días, ¿cómo está?', explanation: 'A polite greeting is a safe choice when speaking to a shopkeeper you do not know.' },
+  { id: 'choice-17', level: 'beginner', type: 'choice', prompt: 'A waiter asks “¿Algo más?”. You have everything you need. What do you say?', options: ['Nada más, gracias.', 'No soy más.', 'Ya nunca más.'], answer: 'Nada más, gracias.', explanation: '“Nada más” means “nothing else”. It is a natural way to finish an order.' },
+  { id: 'choice-18', level: 'beginner', type: 'choice', prompt: 'Your Mexican friend says “Ahorita regreso”. What should you understand?', options: ['They will be back soon, but the exact timing depends on context.', 'They came back yesterday.', 'They are never coming back.'], answer: 'They will be back soon, but the exact timing depends on context.', explanation: '“Ahorita” is flexible in Mexico. Context and the speaker matter; it does not always mean immediately.' },
+  { id: 'blank-16', level: 'beginner', type: 'blank', prompt: 'Complete the polite request: “¿Me _____ traer la cuenta, por favor?”', answer: 'puede', explanation: '“¿Me puede traer…?” is a polite way to ask someone to bring you something.' },
+  { id: 'blank-17', level: 'beginner', type: 'blank', prompt: 'You are leaving a shop. Complete: “Muchas gracias. ¡Hasta _____!”', answer: 'luego', explanation: '“Hasta luego” is a common, friendly way to say goodbye.' },
+  { id: 'blank-18', level: 'beginner', type: 'blank', prompt: 'Complete the sentence: “No traigo efectivo. ¿Aceptan _____?”', answer: 'tarjeta', explanation: '“¿Aceptan tarjeta?” asks whether a business accepts card payments.' },
+  { id: 'order-16', level: 'beginner', type: 'order', prompt: 'You want to ask a stranger politely where the restroom is.', words: ['está', '¿Dónde', 'el', 'baño', '?'], answer: '¿Dónde está el baño?', explanation: 'This is a direct, standard question. You can add “por favor” to make it warmer.' },
+  { id: 'order-17', level: 'beginner', type: 'order', prompt: 'Tell a friend you will see them later.', words: ['vemos', 'al', 'rato', 'nos'], answer: 'Nos vemos al rato', explanation: '“Nos vemos al rato” is a natural casual goodbye meaning “See you later”.' },
+  { id: 'order-18', level: 'beginner', type: 'order', prompt: 'Ask a vendor for one bottle of water, politely.', words: ['una', 'Me', 'botella', 'de', 'agua', 'da', 'por', 'favor'], answer: 'Me da una botella de agua por favor', explanation: '“¿Me da…?” is a common polite request when ordering or buying something.' },
+
+  // Intermediate: interpret tone, choose idiomatic replies, and use common grammar naturally.
+  { id: 'choice-19', level: 'intermediate', type: 'choice', prompt: 'A friend cancels plans at the last minute. Which reply sounds understanding but casual?', options: ['Ni modo, luego nos ponemos de acuerdo.', 'No modo, yo soy acuerdo.', 'Qué padre, me cancelaste.'], answer: 'Ni modo, luego nos ponemos de acuerdo.', explanation: '“Ni modo” expresses acceptance when something cannot be changed. “Luego nos ponemos de acuerdo” means you can arrange another time.' },
+  { id: 'choice-20', level: 'intermediate', type: 'choice', prompt: 'Someone says “Está medio complicado llegar a esa hora”. What are they probably implying?', options: ['It may be difficult to arrive at that time.', 'They are asking you to make it more complicated.', 'They have already arrived.'], answer: 'It may be difficult to arrive at that time.', explanation: '“Medio” often softens a statement and means “somewhat” or “kind of”. The speaker may be indirectly expressing a problem.' },
+  { id: 'choice-21', level: 'intermediate', type: 'choice', prompt: 'Your friend says “¿Me haces paro con esto?”. What is the best interpretation?', options: ['Can you help me out with this?', 'Can you stop the music?', 'Can you lend me your car permanently?'], answer: 'Can you help me out with this?', explanation: '“Hacer paro” is informal Mexican Spanish for helping someone or doing them a favor.' },
+  { id: 'choice-22', level: 'intermediate', type: 'choice', prompt: 'You want to say that a restaurant is crowded but still worth visiting. Which sounds most natural?', options: ['Está llenísimo, pero sí vale la pena.', 'Es lleno mucho, pero vale la pena.', 'Está llenar, pero vale pena sí.'], answer: 'Está llenísimo, pero sí vale la pena.', explanation: '“Llenísimo” is an emphatic form of “lleno”. “Valer la pena” means to be worth it.' },
+  { id: 'choice-23', level: 'intermediate', type: 'choice', prompt: 'A colleague says “Ahorita lo checo”. What is the most careful interpretation?', options: ['They will check it shortly; confirm a deadline if timing matters.', 'They have checked it already.', 'They refuse to check it.'], answer: 'They will check it shortly; confirm a deadline if timing matters.', explanation: '“Ahorita” is context-dependent. In a work situation, ask for a specific time if you need certainty.' },
+
+  { id: 'blank-19', level: 'intermediate', type: 'blank', prompt: 'Complete the idiom: “No te preocupes, yo te _____ la mano.” (I’ll help you.)', answer: 'echo', explanation: '“Echar la mano” means to help. In this sentence, “echo” is the first-person form of “echar”.' },
+  { id: 'blank-20', level: 'intermediate', type: 'blank', prompt: 'Complete the natural response: “¿Te late ir por unos tacos?” — “Sí, me _____”.', answer: 'late', explanation: '“¿Te late…?” means “Are you up for…?” or “Does … sound good to you?”' },
+  { id: 'blank-21', level: 'intermediate', type: 'blank', prompt: 'Complete the sentence: “Se me _____ el camión y llegué tarde.” (I missed the bus.)', answer: 'fue', explanation: '“Se me fue el camión” is a common way to say you missed the bus. The construction presents it as something that happened to you.' },
+  { id: 'blank-22', level: 'intermediate', type: 'blank', prompt: 'Complete the expression: “Ese plan suena bien, _____ que sí.” (That plan sounds good, absolutely.)', answer: 'claro', explanation: '“Claro que sí” is a natural emphatic way to agree.' },
+  { id: 'blank-23', level: 'intermediate', type: 'blank', prompt: 'Complete the sentence: “No pude ir porque _____ trabajando.” (I couldn’t go because I was working.)', answer: 'estaba', explanation: 'Use the imperfect “estaba” to describe an ongoing background action in the past.' },
+
+  { id: 'order-19', level: 'intermediate', type: 'order', prompt: 'Tell your friend: “I ran out of money, so I’m staying in today.”', words: ['me', 'quedó', 'sin', 'lana', 'así', 'que', 'hoy', 'me', 'quedo', 'en', 'casa'], answer: 'Me quedé sin lana así que hoy me quedo en casa', explanation: '“Quedarse sin lana” means to run out of money. “Me quedé” is past; “me quedo” describes today’s decision.' },
+  { id: 'order-20', level: 'intermediate', type: 'order', prompt: 'Make a natural suggestion: “If you want, we can meet up later.”', words: ['Si', 'quieres', 'podemos', 'vernos', 'más', 'al', 'rato'], answer: 'Si quieres podemos vernos más al rato', explanation: '“Si quieres…” softens a suggestion. “Más al rato” means later on.' },
+  { id: 'order-21', level: 'intermediate', type: 'order', prompt: 'Say: “I didn’t catch what you said; could you repeat it?”', words: ['No', 'alcancé', 'a', 'escuchar', 'lo', 'que', 'dijiste', '¿me', 'lo', 'repites', '?'], answer: 'No alcancé a escuchar lo que dijiste ¿me lo repites?', explanation: '“No alcancé a escuchar” is a natural way to say you did not quite hear something.' },
+  { id: 'order-22', level: 'intermediate', type: 'order', prompt: 'Say: “The place is a bit far, but we can get there by bus.”', words: ['El', 'lugar', 'está', 'algo', 'lejos', 'pero', 'podemos', 'llegar', 'en', 'camión'], answer: 'El lugar está algo lejos pero podemos llegar en camión', explanation: '“Algo lejos” means somewhat far. In much of Mexico, “camión” can mean a bus.' },
+  { id: 'order-23', level: 'intermediate', type: 'order', prompt: 'Tell someone: “I’ll let you know when I’m on my way.”', words: ['Te', 'aviso', 'cuando', 'ya', 'vaya', 'en', 'camino'], answer: 'Te aviso cuando ya vaya en camino', explanation: '“Te aviso” means “I’ll let you know”. The subjunctive “vaya” is used after “cuando” for a future action.' },
+
+  // Advanced: register, implication, idioms, and more nuanced Mexican usage.
+  { id: 'choice-24', level: 'advanced', type: 'choice', prompt: 'A Mexican coworker says “Ahorita lo vemos” during a meeting. What is the safest response if the issue is urgent?', options: ['Ask politely for a specific time to review it.', 'Assume it will be handled in the next minute.', 'Treat it as a definite refusal.'], answer: 'Ask politely for a specific time to review it.', explanation: '“Ahorita” does not give a precise deadline. In a professional context, clarify: “¿Te parece si lo revisamos antes de las tres?”' },
+  { id: 'choice-25', level: 'advanced', type: 'choice', prompt: 'A friend says “No es por nada, pero tu coche necesita una buena revisada”. What is the likely communicative function?', options: ['They are softening a criticism or concern.', 'They are saying the car is perfect.', 'They are asking you to sell the car immediately.'], answer: 'They are softening a criticism or concern.', explanation: '“No es por nada, pero…” often introduces a criticism, warning, or uncomfortable observation.' },
+  { id: 'choice-26', level: 'advanced', type: 'choice', prompt: 'Which response best matches the tone of “¡Qué buena onda que viniste a echarme la mano!”?', options: ['¡Para eso estamos! Qué bueno que se pudo.', 'Exijo una remuneración inmediata.', 'No comprendo la forma de la onda.'], answer: '¡Para eso estamos! Qué bueno que se pudo.', explanation: '“¡Para eso estamos!” is a warm, idiomatic response meaning you are glad to help. It matches the friendly tone.' },
+  { id: 'choice-27', level: 'advanced', type: 'choice', prompt: 'Someone says “Se puso pesado el ambiente”. What does this suggest?', options: ['The atmosphere became tense or uncomfortable.', 'The room became physically heavier.', 'The party became more expensive.'], answer: 'The atmosphere became tense or uncomfortable.', explanation: '“Pesado” can describe a tense, unpleasant, or difficult atmosphere, not just physical weight.' },
+  { id: 'choice-28', level: 'advanced', type: 'choice', prompt: 'Which phrase is the most tactful way to disagree with a host’s suggestion?', options: ['Está buena la idea, pero creo que hoy no se va a poder.', 'Esa idea está de la chingada.', 'Ni de chiste hago eso, cállate.'], answer: 'Está buena la idea, pero creo que hoy no se va a poder.', explanation: 'This softens disagreement and preserves rapport. Strong slang may sound rude, especially with someone you do not know well.' },
+  { id: 'choice-29', level: 'advanced', type: 'choice', prompt: 'A friend says “Me dejó plantado”. What happened?', options: ['Someone failed to show up for an arranged meeting.', 'Someone left a plant at their house.', 'Someone offered them a job.'], answer: 'Someone failed to show up for an arranged meeting.', explanation: '“Dejar plantado a alguien” means to stand someone up or fail to show up for a plan.' },
+  { id: 'choice-30', level: 'advanced', type: 'choice', prompt: 'In “No le busques tres pies al gato”, what is the speaker advising?', options: ['Do not overcomplicate things or look for problems that are not there.', 'Look carefully for a missing animal.', 'Ask three people before deciding.'], answer: 'Do not overcomplicate things or look for problems that are not there.', explanation: 'This idiom advises someone not to complicate a situation unnecessarily. It is understood in Mexico and elsewhere in the Spanish-speaking world.' },
+
+  { id: 'blank-24', level: 'advanced', type: 'blank', prompt: 'Complete the expression: “No hay que hacer _____ en un vaso de agua.” (Don’t make a big deal out of a small thing.)', answer: 'tormenta', explanation: '“Hacer una tormenta en un vaso de agua” means to exaggerate or make a big problem out of something small.' },
+  { id: 'blank-25', level: 'advanced', type: 'blank', prompt: 'Complete the expression: “Me quedé con la boca _____.” (I was left speechless / amazed.)', answer: 'abierta', explanation: '“Quedarse con la boca abierta” means to be astonished or left speechless.' },
+  { id: 'blank-26', level: 'advanced', type: 'blank', prompt: 'Complete the saying: “Más vale tarde que _____.”', answer: 'nunca', explanation: '“Más vale tarde que nunca” means “better late than never”.' },
+  { id: 'blank-27', level: 'advanced', type: 'blank', prompt: 'Complete the sentence: “Por más que le expliqué, no _____ a entender.” (No matter how much I explained, they did not manage to understand.)', answer: 'logró', explanation: '“Lograr + infinitive” means to manage to do something. “No logró entender” means they did not manage to understand.' },
+  { id: 'blank-28', level: 'advanced', type: 'blank', prompt: 'Complete the idiom: “A caballo regalado no se le mira el _____.”', answer: 'diente', explanation: 'This saying means you should not criticize a gift or something received for free.' },
+  { id: 'blank-29', level: 'advanced', type: 'blank', prompt: 'Complete the natural phrase: “No es que no quiera ayudarte; es que no _____ cómo hacerlo.”', answer: 'sé', explanation: '“No es que…” introduces an explanation or qualification. “Sé” is the first-person present of “saber”.' },
+  { id: 'blank-30', level: 'advanced', type: 'blank', prompt: 'Complete the expression: “Le salió el tiro por la _____.” (Their plan backfired.)', answer: 'culata', explanation: '“Salir el tiro por la culata” means that an attempt or plan had the opposite result.' },
+
+  { id: 'order-24', level: 'advanced', type: 'order', prompt: 'Explain tactfully: “I would help you, but I have already made other plans.”', words: ['Con', 'gusto', 'te', 'ayudaría', 'pero', 'ya', 'había', 'hecho', 'otros', 'planes'], answer: 'Con gusto te ayudaría pero ya había hecho otros planes', explanation: 'The conditional “ayudaría” softens the offer, while “había hecho” places the plans before the current moment.' },
+  { id: 'order-25', level: 'advanced', type: 'order', prompt: 'Say: “It is not that I disagree; I just see it differently.”', words: ['No', 'es', 'que', 'esté', 'en', 'desacuerdo', 'simplemente', 'lo', 'veo', 'de', 'otra', 'manera'], answer: 'No es que esté en desacuerdo simplemente lo veo de otra manera', explanation: '“No es que…” followed by the subjunctive “esté” frames a nuanced clarification rather than a blunt disagreement.' },
+  { id: 'order-26', level: 'advanced', type: 'order', prompt: 'Say: “By the time we arrived, the place was already packed.”', words: ['Para', 'cuando', 'llegamos', 'el', 'lugar', 'ya', 'estaba', 'hasta', 'el', 'tope'], answer: 'Para cuando llegamos el lugar ya estaba hasta el tope', explanation: '“Estar hasta el tope” means to be completely full or packed.' },
+  { id: 'order-27', level: 'advanced', type: 'order', prompt: 'Say: “If I had known, I would have told you beforehand.”', words: ['Si', 'lo', 'hubiera', 'sabido', 'te', 'habría', 'avisado', 'antes'], answer: 'Si lo hubiera sabido te habría avisado antes', explanation: 'This is a past hypothetical: pluperfect subjunctive in the “si” clause and conditional perfect in the result.' },
+  { id: 'order-28', level: 'advanced', type: 'order', prompt: 'Say: “The thing is, we are running out of time.”', words: ['El', 'chiste', 'es', 'que', 'se', 'nos', 'está', 'acabando', 'el', 'tiempo'], answer: 'El chiste es que se nos está acabando el tiempo', explanation: '“El chiste es que…” is a colloquial way to introduce the main point: “The thing is…”.' },
+  { id: 'order-29', level: 'advanced', type: 'order', prompt: 'Say: “I would rather you tell me directly.”', words: ['Preferiría', 'que', 'me', 'lo', 'dijeras', 'directamente'], answer: 'Preferiría que me lo dijeras directamente', explanation: 'The conditional “preferiría” expresses a preference; the imperfect subjunctive “dijeras” follows “que”.' },
+  { id: 'order-30', level: 'advanced', type: 'order', prompt: 'Say: “Although it was expensive, it was worth every peso.”', words: ['Aunque', 'estuvo', 'caro', 'valió', 'cada', 'peso'], answer: 'Aunque estuvo caro valió cada peso', explanation: '“Valer cada peso” emphasizes that something was worth its price. In a more neutral register, you can say “valió la pena”.' },
+
 ];
+
+function getInteractiveExerciseLevel(item: InteractivePracticeItem): InteractivePracticeLevel {
+  if (item.level) return item.level;
+  const match = item.id.match(/-(\d+)$/);
+  const itemNumber = Number(match?.[1] ?? 0);
+  if (itemNumber <= 7) return 'beginner';
+  if (itemNumber <= 12) return 'intermediate';
+  return 'advanced';
+}
 
 const REVIEW_STORAGE_KEY = 'mexicanSlangReviewItems';
 
@@ -238,6 +306,34 @@ const conversationSteps = [
       { speaker: 'Guest', line: '¿Quieres ir por algo de tomar?', translation: 'Want to get something to drink?', prompt: 'Agree casually using a common Mexican expression.', options: ['¡Sí, va! Vamos.', 'Sí, voy de tomar algo yo.', 'Estoy de acuerdo ir por.'], correct: '¡Sí, va! Vamos.', explanation: '“¡Va!” is a common casual way to say “sure / sounds good”.', tip: '“¡Jalo!” is even more informal and means “I’m in”.' },
     ],
   },
+  {
+    scene: 'Resolving a problem at a hotel',
+    location: '🏨 Hotel reception',
+    dialogue: [
+      { speaker: 'Receptionist', line: 'Buenas tardes, ¿en qué le puedo ayudar?', translation: 'Good afternoon, how can I help you?', prompt: 'Explain politely that the air conditioning in your room is not working.', options: ['Buenas tardes. El aire acondicionado de mi habitación no funciona.', 'Mi habitación no trabaja el aire.', 'Quiero otro clima porque sí.'], correct: 'Buenas tardes. El aire acondicionado de mi habitación no funciona.', explanation: 'State the problem clearly and politely. “No funciona” is the natural phrase for something that is not working.', tip: 'You can add “¿Podrían revisarlo, por favor?” to request assistance.' },
+      { speaker: 'Receptionist', line: 'Claro. ¿Desde cuándo tiene ese problema?', translation: 'Of course. Since when have you had that problem?', prompt: 'Say that it has been happening since last night.', options: ['Desde anoche.', 'Por mañana pasada.', 'Ayer en la noche desde será.'], correct: 'Desde anoche.', explanation: '“Desde anoche” means “since last night”. “Desde” marks the starting point of a continuing situation.', tip: 'For a full sentence: “No funciona desde anoche”.' },
+      { speaker: 'Receptionist', line: 'Mandaremos a alguien a revisarlo.', translation: 'We will send someone to check it.', prompt: 'Ask approximately how long it will take.', options: ['¿Más o menos cuánto tiempo tardará?', '¿Cuánto tiempo tiene usted?', '¿A qué hora cuesta?'], correct: '¿Más o menos cuánto tiempo tardará?', explanation: '“Más o menos” softens the question and asks for an estimate.', tip: '“¿En cuánto tiempo?” is shorter and also natural.' },
+    ],
+  },
+  {
+    scene: 'Handling a misunderstanding with a friend',
+    location: '🤝 Friends',
+    dialogue: [
+      { speaker: 'Friend', line: 'Oye, sentí que te molestaste ayer.', translation: 'Hey, I felt like you got upset yesterday.', prompt: 'Respond calmly that it was not your intention and ask what gave that impression.', options: ['No era mi intención. ¿Qué te hizo pensar eso?', 'No te metas, siempre inventas cosas.', 'Yo no intención era de ayer.'], correct: 'No era mi intención. ¿Qué te hizo pensar eso?', explanation: 'This response acknowledges their feelings without becoming defensive and invites clarification.', tip: '“No era mi intención” is useful for repairing misunderstandings.' },
+      { speaker: 'Friend', line: 'Cuando te saludé, casi no me contestaste.', translation: 'When I greeted you, you barely answered me.', prompt: 'Explain that you were distracted because you were worried about something.', options: ['Perdón, traía la cabeza en otra cosa y no me di cuenta.', 'No me importa que me saludes.', 'Mi cabeza estaba otra cosa trayendo.'], correct: 'Perdón, traía la cabeza en otra cosa y no me di cuenta.', explanation: '“Traer la cabeza en otra cosa” means to have your mind on something else.', tip: 'An apology plus a brief explanation often sounds more natural than a literal translation.' },
+      { speaker: 'Friend', line: 'Está bien, solo quería aclararlo.', translation: 'It’s okay, I just wanted to clear it up.', prompt: 'Close the conversation warmly and suggest getting together soon.', options: ['Qué bueno que lo hablamos. A ver si nos vemos esta semana.', 'Ya no hables de eso nunca.', 'Está bien, yo aclaración quiero.'], correct: 'Qué bueno que lo hablamos. A ver si nos vemos esta semana.', explanation: '“Qué bueno que lo hablamos” acknowledges the conversation; “a ver si nos vemos” makes a friendly suggestion.', tip: '“A ver si…” often introduces a casual plan, not a guaranteed appointment.' },
+    ],
+  },
+  {
+    scene: 'Negotiating a repair with a landlord',
+    location: '🛠️ Apartment',
+    dialogue: [
+      { speaker: 'Landlord', line: '¿Qué pasó con la fuga?', translation: 'What happened with the leak?', prompt: 'Explain that the leak got worse overnight and water is reaching the floor.', options: ['La fuga empeoró durante la noche y el agua ya está llegando al piso.', 'La fuga está mejor peor noche.', 'El piso tomó agua anoche.'], correct: 'La fuga empeoró durante la noche y el agua ya está llegando al piso.', explanation: '“Empeoró” means it got worse. “Está llegando al piso” explains the current consequence.', tip: 'For urgent repairs, describe the damage and when it started.' },
+      { speaker: 'Landlord', line: 'Voy a mandar al plomero mañana.', translation: 'I will send the plumber tomorrow.', prompt: 'Politely explain that it is urgent and ask whether someone can come today.', options: ['Entiendo, pero sí urge. ¿Habría posibilidad de que alguien viniera hoy?', 'Mañana no sirve, hazlo ahora.', 'El plomero posibilidad hoy mañana.'], correct: 'Entiendo, pero sí urge. ¿Habría posibilidad de que alguien viniera hoy?', explanation: '“¿Habría posibilidad…?” is a tactful, polite way to make a request. “Sí urge” communicates urgency.', tip: 'The imperfect subjunctive “viniera” is common after this polite construction.' },
+      { speaker: 'Landlord', line: 'Déjame ver si consigo a alguien.', translation: 'Let me see if I can find someone.', prompt: 'Ask them to let you know as soon as they have an answer.', options: ['¿Me avisa en cuanto sepa algo, por favor?', '¿Me avisó cuando supo ayer?', 'Avísame algo en cuanto.'], correct: '¿Me avisa en cuanto sepa algo, por favor?', explanation: '“En cuanto sepa algo” means “as soon as you know something”. The subjunctive “sepa” follows this future time expression.', tip: 'Use “¿Me avisa…?” for polite requests.' },
+    ],
+  },
+
 ];
 
 
@@ -276,6 +372,48 @@ const questions = [
     options: ['It’s expensive', 'I don’t know', 'Okay! / Sounds good!', 'I’m leaving forever'],
     correct: 'Okay! / Sounds good!',
     example: '—¿Nos vemos a las ocho? —¡Sale!',
+  },
+  {
+    phrase: '¿Me podría…?',
+    question: 'You are speaking to someone you do not know and need them to repeat a direction. Which request is the most polite?',
+    options: ['¿Me podría repetir la dirección, por favor?', 'Repíteme eso ya.', '¿Tú repites dirección?'],
+    correct: '¿Me podría repetir la dirección, por favor?',
+    example: 'Disculpe, ¿me podría repetir la dirección?',
+  },
+  {
+    phrase: 'Se me olvidó',
+    question: 'You left your passport at the hotel. What is the natural way to explain this?',
+    options: ['Se me olvidó el pasaporte en el hotel.', 'Me olvidé el pasaporte al hotel.', 'Soy olvidado con pasaporte.'],
+    correct: 'Se me olvidó el pasaporte en el hotel.',
+    example: '¡Se me olvidó el cargador en el cuarto!',
+  },
+  {
+    phrase: 'Quedar',
+    question: 'A friend asks “¿A qué hora quedamos?”. What are they asking?',
+    options: ['What time shall we meet?', 'What time do we finish eating?', 'Where should we leave the keys?'],
+    correct: 'What time shall we meet?',
+    example: '¿Quedamos a las siete afuera del cine?',
+  },
+  {
+    phrase: 'Me queda',
+    question: 'You try on a shirt and say “Me queda grande”. What do you mean?',
+    options: ['It is too big on me.', 'It is expensive.', 'I have to leave it here.'],
+    correct: 'It is too big on me.',
+    example: 'La camisa me queda un poco grande.',
+  },
+  {
+    phrase: '¿Cómo llego…?',
+    question: 'You are lost and want directions to the museum. Which question is natural?',
+    options: ['¿Cómo llego al museo desde aquí?', '¿Cómo soy el museo?', '¿Dónde llego el museo?'],
+    correct: '¿Cómo llego al museo desde aquí?',
+    example: 'Disculpe, ¿cómo llego al centro desde aquí?',
+  },
+  {
+    phrase: 'Aunque',
+    question: 'Choose the sentence that correctly means “Even though it is raining, we are going out.”',
+    options: ['Aunque está lloviendo, vamos a salir.', 'Aunque llueve, salimos ayer.', 'A pesar que está lloviendo, vamos salir a.'],
+    correct: 'Aunque está lloviendo, vamos a salir.',
+    example: 'Aunque estoy cansado, voy a acompañarte.',
   },
 ];
 
@@ -325,6 +463,48 @@ const categoryQuestions = {
       correct: 'It’s cool or nice',
       example: 'El concierto estuvo muy padre.',
     },
+    {
+      phrase: 'Me late',
+      question: 'A friend asks “¿Te late ir a Chapultepec el domingo?”. What are they asking?',
+      options: ['Are you up for going to Chapultepec on Sunday?', 'Do you know the way to Chapultepec?', 'Do you dislike Sundays?'],
+      correct: 'Are you up for going to Chapultepec on Sunday?',
+      example: 'Me late el plan, ¿a qué hora salimos?',
+    },
+    {
+      phrase: 'Hacer paro',
+      question: 'Your neighbor says “¿Me haces paro y recibes un paquete?”. What do they want?',
+      options: ['A favor or a bit of help.', 'A ride to the police station.', 'A discount on the package.'],
+      correct: 'A favor or a bit of help.',
+      example: '¿Me haces paro y riegas mis plantas?',
+    },
+    {
+      phrase: 'Echar relajo',
+      question: 'Your classmates “estaban echando relajo” after class. What were they doing?',
+      options: ['Joking around and having fun.', 'Doing serious paperwork.', 'Arguing about a bill.'],
+      correct: 'Joking around and having fun.',
+      example: 'Nos quedamos echando relajo después de clase.',
+    },
+    {
+      phrase: 'Está de lujo',
+      question: 'Someone says “El departamento está de lujo”. What do they mean?',
+      options: ['The apartment is excellent or really nice.', 'The apartment is overpriced.', 'The apartment is empty.'],
+      correct: 'The apartment is excellent or really nice.',
+      example: 'La comida de ese lugar está de lujo.',
+    },
+    {
+      phrase: 'No te claves',
+      question: 'A friend says “No te claves con ese comentario”. What are they advising?',
+      options: ['Do not dwell on that comment or take it too personally.', 'Write the comment down.', 'Repeat the comment louder.'],
+      correct: 'Do not dwell on that comment or take it too personally.',
+      example: 'No te claves, mañana será otro día.',
+    },
+    {
+      phrase: 'Me cayó el veinte',
+      question: 'After a long explanation, someone says “¡Ya me cayó el veinte!”. What happened?',
+      options: ['They finally understood.', 'They received twenty pesos.', 'They forgot the explanation.'],
+      correct: 'They finally understood.',
+      example: 'Hasta que vi el ejemplo me cayó el veinte.',
+    },
   ],
   street: [
     {
@@ -368,6 +548,48 @@ const categoryQuestions = {
       options: ['Surprise or disbelief', 'Hunger', 'Sleepiness', 'Permission'],
       correct: 'Surprise or disbelief',
       example: '¡No manches! ¿Ya terminaste el proyecto?',
+    },
+    {
+      phrase: 'Se armó',
+      question: 'Your friends say “Se armó la carne asada”. What does that suggest?',
+      options: ['The barbecue gathering is happening / has been organized.', 'The barbecue caught fire by accident.', 'The event has been cancelled.'],
+      correct: 'The barbecue gathering is happening / has been organized.',
+      example: 'El sábado se armó la reunión en casa de Ana.',
+    },
+    {
+      phrase: 'Andar corto de lana',
+      question: 'If someone says “Esta semana ando corto de lana”, what do they mean?',
+      options: ['They are short on money this week.', 'They need smaller banknotes.', 'They are working fewer hours.'],
+      correct: 'They are short on money this week.',
+      example: 'No voy a salir; ando corto de lana.',
+    },
+    {
+      phrase: 'Está de pelos',
+      question: 'In a positive context, “¡Está de pelos!” means…',
+      options: ['It is fantastic or impressive.', 'It is hairy.', 'It is dangerous and should be avoided.'],
+      correct: 'It is fantastic or impressive.',
+      example: 'La vista desde aquí está de pelos.',
+    },
+    {
+      phrase: 'Dar el avión',
+      question: 'If someone “te da el avión”, what might they be doing?',
+      options: ['Pretending to listen or agreeing just to get you to stop.', 'Offering to take you to the airport.', 'Giving you directions.'],
+      correct: 'Pretending to listen or agreeing just to get you to stop.',
+      example: 'Le expliqué todo, pero creo que solo me dio el avión.',
+    },
+    {
+      phrase: 'Ponerse las pilas',
+      question: 'Your teacher says “Hay que ponerse las pilas para el examen”. What do you need to do?',
+      options: ['Get focused and make an effort.', 'Buy new batteries.', 'Leave the classroom.'],
+      correct: 'Get focused and make an effort.',
+      example: 'Me tengo que poner las pilas con el español.',
+    },
+    {
+      phrase: 'No dar una',
+      question: 'Someone says “Hoy no doy una”. What are they expressing?',
+      options: ['Nothing seems to be going right for them today.', 'They are refusing to give anything away.', 'They scored perfectly.'],
+      correct: 'Nothing seems to be going right for them today.',
+      example: 'Se me olvidaron las llaves y perdí el camión; hoy no doy una.',
     },
   ],
 };
@@ -737,6 +959,57 @@ const cultureEntries: CultureEntry[] = [
     note: 'Do not assume everyone wants physical contact. Follow the other person’s lead and respect personal boundaries.',
     category: 'Customs & traditions',
   },
+  {
+    phrase: 'Hacer sobremesa',
+    meaning: 'To stay at the table talking after a meal.',
+    context: 'A social custom in which conversation continues after eating; it is not about ordering another course.',
+    register: 'Neutral · Cultural',
+    example: 'Después de la comida nos quedamos haciendo sobremesa.',
+    translation: 'After the meal, we stayed at the table chatting.',
+    note: 'A useful cultural concept: the meal may be finished, but the social gathering continues. Do not rush the moment.',
+    category: 'Customs & traditions',
+  },
+  {
+    phrase: 'Ahí nos vemos',
+    meaning: 'See you there / I’ll see you there.',
+    context: 'Used to confirm an informal plan when the place is already understood.',
+    register: 'Informal · Everyday',
+    example: 'Entonces a las ocho en la entrada. Ahí nos vemos.',
+    translation: 'So, at eight at the entrance. See you there.',
+    note: 'It confirms a plan, but it does not itself specify a location or exact arrangement. Make sure those details are clear.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: 'Con permiso',
+    meaning: 'Excuse me / May I get by?',
+    context: 'Used to pass in front of someone, leave a crowded row, or politely interrupt.',
+    register: 'Polite · Everyday',
+    example: 'Con permiso, ¿me deja pasar?',
+    translation: 'Excuse me, could you let me through?',
+    note: 'A very useful phrase in markets, buses, restaurants, and crowded public spaces.',
+    category: 'Useful expressions',
+  },
+  {
+    phrase: '¿Qué pena?',
+    meaning: 'What a shame / How embarrassing, depending on context.',
+    context: 'Can express sympathy, embarrassment, or regret. The situation and tone determine the meaning.',
+    register: 'Neutral to informal · Context-dependent',
+    example: '¡Qué pena que no alcanzaste a llegar!',
+    translation: 'What a shame you didn’t make it in time!',
+    note: 'Do not assume “pena” always means punishment. In everyday speech it often refers to embarrassment or regret.',
+    category: 'Everyday slang',
+  },
+  {
+    phrase: 'Está bien servido',
+    meaning: 'A portion is generous / well served.',
+    context: 'Often said about food portions at a restaurant or market.',
+    register: 'Informal · Food',
+    example: 'El plato está muy bien servido.',
+    translation: 'The plate has a very generous portion.',
+    note: 'This is a useful phrase when describing quantity, not quality alone.',
+    category: 'Food & social life',
+  },
+
 ];
 
 type FreePracticeTurn = {
@@ -831,6 +1104,37 @@ const freePracticeScenarios: FreePracticeScenario[] = [
       { speaker: 'Guest', spanishLine: '¿Quieres ir por algo de tomar?', englishMeaning: 'Do you want to get something to drink?', prompt: 'Accept casually.', sample: '¡Sí, va! Gracias.', tip: '“¡Va!” is a common casual way to say “Okay / sounds good”.', keywords: ['va', 'sí', 'si', 'claro', 'jalo'] },
     ],
   },
+  {
+    id: 'hotel_problem',
+    title: 'At a hotel',
+    emoji: '🏨',
+    description: 'Explain a problem, ask for a solution, and clarify timing.',
+    turns: [
+      { speaker: 'Receptionist', spanishLine: 'Buenas tardes, ¿todo está bien con su habitación?', englishMeaning: 'Good afternoon, is everything okay with your room?', prompt: 'Explain in a complete sentence that the air conditioning is not working.', sample: 'Buenas tardes. El aire acondicionado de mi habitación no funciona.', tip: 'Use “no funciona” to explain that an appliance or service is not working.', keywords: ['aire acondicionado', 'no funciona'] },
+      { speaker: 'Receptionist', spanishLine: 'Podemos mandar a mantenimiento.', englishMeaning: 'We can send maintenance.', prompt: 'Ask politely when someone can come to check it.', sample: 'Muchas gracias. ¿Más o menos a qué hora podrían venir?', tip: '“¿A qué hora podrían venir?” is polite and uses the conditional to soften the request.', keywords: ['a qué hora', 'a que hora', 'podrían', 'podrian', 'venir'] },
+    ],
+  },
+  {
+    id: 'misunderstanding',
+    title: 'Clearing up a misunderstanding',
+    emoji: '🤝',
+    description: 'Respond tactfully, explain yourself, and repair a conversation.',
+    turns: [
+      { speaker: 'Friend', spanishLine: 'Oye, creo que ayer te molestaste conmigo.', englishMeaning: 'Hey, I think you got upset with me yesterday.', prompt: 'Say that it was not your intention and ask what made them think that.', sample: 'No era mi intención. ¿Qué te hizo pensar eso?', tip: 'Acknowledge the other person and ask an open question instead of immediately defending yourself.', keywords: ['no era mi intención', 'no era mi intencion', 'qué te hizo pensar', 'que te hizo pensar'] },
+      { speaker: 'Friend', spanishLine: 'Sentí que casi no me hiciste caso.', englishMeaning: 'I felt like you barely paid attention to me.', prompt: 'Apologize and explain that you had your mind on another problem.', sample: 'Perdón, traía la cabeza en otra cosa y no me di cuenta.', tip: '“Traer la cabeza en otra cosa” is a natural idiom for being distracted or preoccupied.', keywords: ['perdón', 'perdon', 'cabeza en otra cosa', 'no me di cuenta'] },
+    ],
+  },
+  {
+    id: 'work_meeting',
+    title: 'At a work meeting',
+    emoji: '💼',
+    description: 'Give an update, explain a delay, and propose a next step.',
+    turns: [
+      { speaker: 'Colleague', spanishLine: '¿Cómo vamos con el proyecto?', englishMeaning: 'How are we doing with the project?', prompt: 'Explain that most of the work is done but one detail is still pending.', sample: 'Ya terminamos casi todo, pero todavía queda un detalle pendiente.', tip: '“Queda pendiente” is useful in professional contexts for something that remains to be done.', keywords: ['terminamos casi todo', 'casi todo', 'pendiente', 'falta un detalle'] },
+      { speaker: 'Colleague', spanishLine: '¿Crees que podamos entregarlo hoy?', englishMeaning: 'Do you think we can deliver it today?', prompt: 'Give a cautious answer: you will confirm after checking one thing.', sample: 'Déjame revisar ese último detalle y te confirmo en un rato.', tip: '“Déjame revisar…” is a natural way to ask for a moment before committing.', keywords: ['déjame revisar', 'dejame revisar', 'te confirmo'] },
+    ],
+  },
+
 ];
 
 function normalizePracticeText(value: string) {
@@ -985,7 +1289,7 @@ const SHOP_AVATARS = [
   { id: 'avatar_default', name: 'Explorador', emoji: '🧑‍🎤', price: 0, category: 'Personajes', description: 'Tu avatar inicial.' },
   // Comida
   { id: 'avatar_taco', name: 'Taquero legendario', emoji: '🌮', price: 20, category: 'Comida', description: 'Listo para dominar cualquier taquería.' },
-  { id: 'food_torta', name: 'Torta ahogada', emoji: '🥪', price: 75, category: 'Comida', description: 'Con personalidad bien tapatía.' },
+  { id: 'food_chilaquil', name: 'Chilaquil', emoji: '🍳', price: 75, category: 'Comida', description: 'Un clásico mexicano para empezar con energía.' },
   { id: 'food_elote', name: 'Elote callejero', emoji: '🌽', price: 150, category: 'Comida', description: 'El clásico de cualquier paseo.' },
   { id: 'food_chile', name: 'Chile picante', emoji: '🌶️', price: 350, category: 'Comida', description: 'Para quienes hablan sin miedo.' },
   { id: 'food_aguas', name: 'Aguas frescas', emoji: '🥤', price: 900, category: 'Comida', description: 'Refrescante y muy mexicano.' },
@@ -1016,9 +1320,123 @@ const SHOP_AVATARS = [
 const SHOP_CATEGORIES = ['Todos', 'Comida', 'Animales', 'Cultura', 'Personajes', 'Legendarios', 'Logros'];
 
 const NEGATIVE_ACHIEVEMENTS = [
-  { id: 'GUERO 😅', name: 'GUERO', emoji: '😅', requirement: 'Alcanza 3 errores en total', description: 'Todavía te falta barrio. ¡Sigue practicando!', color: '#FEF3C7', border: '#F59E0B' },
-  { id: 'MEXICA-NO! 🇲🇽', name: 'MEXICA-NO!', emoji: '🇲🇽', requirement: 'Alcanza 10 errores en total', description: 'Ya llevas varios tropiezos. ¡No te rindas!', color: '#DBEAFE', border: '#60A5FA' },
-  { id: 'GRINGO 🌵', name: 'GRINGO', emoji: '🌵', requirement: 'Alcanza 25 errores en total', description: 'Una leyenda de los errores. ¡A estudiar!', color: '#FEE2E2', border: '#EF4444' },
+  { id: 'GUERO 😅', name: 'GUERO', emoji: '😅', translation: 'Blondie / fair-haired person', explanation: 'In Mexico, “güero” commonly describes someone with light hair or a light complexion. It can be affectionate or simply descriptive; context and tone matter.', requirement: 'Alcanza 3 errores en total', description: 'Todavía te falta barrio. ¡Sigue practicando!', descriptionTranslation: 'You still need to learn the ropes. Keep practicing!', color: '#FEF3C7', border: '#F59E0B', threshold: 3 },
+  { id: 'MEXICA-NO! 🇲🇽', name: 'MEXICA-NO!', emoji: '🇲🇽', translation: 'Mexican… not quite!', explanation: 'A playful pun on “mexicano” and “no”: it jokes that you are not quite getting Mexican Spanish right yet. This is a made-up achievement name, not a standard expression.', requirement: 'Alcanza 10 errores en total', description: 'Ya llevas varios tropiezos. ¡No te rindas!', descriptionTranslation: 'You’ve made a few mistakes. Don’t give up!', color: '#DBEAFE', border: '#60A5FA', threshold: 10 },
+  { id: 'GABACHO 🧢', name: 'GABACHO', emoji: '🧢', translation: 'American / gringo', explanation: 'Informal Mexican slang often used for a person from the United States. Depending on the speaker and situation, it can sound neutral, teasing, or dismissive.', requirement: 'Alcanza 15 errores en total', description: 'Ya te estás haciendo notar por tus tropiezos.', descriptionTranslation: 'Your mistakes are starting to stand out.', color: '#E0E7FF', border: '#6366F1', threshold: 15 },
+  { id: 'TACO BELL 🌮', name: 'TACO BELL', emoji: '🌮', translation: 'Taco Bell (restaurant chain)', explanation: 'A joke referencing the US fast-food chain. The name plays on the contrast between a commercial version of Mexican-inspired food and the variety of real Mexican food.', requirement: 'Alcanza 20 errores en total', description: 'Confundes el auténtico sabor del español mexicano.', descriptionTranslation: 'You’re mixing up authentic Mexican Spanish.', color: '#FFEDD5', border: '#F97316', threshold: 20 },
+  { id: 'POCHITO 🐤', name: 'POCHITO', emoji: '🐤', translation: 'Little pocho (playful nickname)', explanation: 'A playful, invented diminutive inspired by “pocho,” a term sometimes used for a Mexican or Mexican American who has adopted many English-language or US cultural habits. “Pochito” is not a standard dictionary form.', requirement: 'Alcanza 25 errores en total', description: 'Un paso más cerca de la leyenda de los errores.', descriptionTranslation: 'You’re one step closer to becoming a mistake-making legend.', color: '#FCE7F3', border: '#EC4899', threshold: 25 },
+  { id: 'GRINGO 🌵', name: 'GRINGO', emoji: '🌵', translation: 'Foreigner / often an American', explanation: 'In Mexico, “gringo” commonly refers to a person from the United States, though usage varies. It can be neutral, friendly, or derogatory depending on context, tone, and relationship.', requirement: 'Alcanza 30 errores en total', description: 'El máximo nivel de despiste. ¡Ya eres toda una leyenda!', descriptionTranslation: 'The ultimate level of confusion. You’re a legend!', color: '#FEE2E2', border: '#EF4444', threshold: 30 },
+];
+
+type BadWordEntry = {
+  term: string; meaning: string; english: string; example: string; exampleEnglish: string; note: string;
+  level: 'Fuerte' | 'Muy fuerte' | 'Suave'; group: 'Chingar' | 'Insultos' | 'Exclamaciones' | 'Pedo y fiesta' | 'Otras expresiones';
+};
+
+const BAD_WORD_ENTRIES: BadWordEntry[] = [
+  { term: 'Chingar', meaning: 'Verbo comodín: molestar, fastidiar, trabajar duro, arruinar algo o tener sexo, según el contexto.', english: 'to mess with / bother / work very hard / screw', example: 'Me chingué todo el día trabajando.', exampleEnglish: 'I spent the whole day working my ass off.', note: 'Tiene muchos sentidos. El contexto y el tono lo cambian todo.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chinga', meaning: 'Una friega, un trabajo agotador o una golpiza.', english: 'a rough time / a beating / exhausting work', example: 'Qué chinga fue mudarnos ayer.', exampleEnglish: 'Moving yesterday was exhausting.', note: 'También se usa en “dar una chinga”.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chingadera', meaning: 'Objeto cuyo nombre no recuerdas, cosa de mala calidad o algo absurdo.', english: 'thingamajig / piece of crap / nonsense', example: '¿Me pasas esa chingadera de la mesa?', exampleEnglish: 'Can you pass me that thingy on the table?', note: 'El tono puede ser juguetón o despectivo.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chingonería', meaning: 'Algo extraordinario, muy bien hecho o impresionante.', english: 'something freaking awesome', example: '¡Tu cámara nueva es una chingonería!', exampleEnglish: 'Your new camera is freaking awesome!', note: 'Grosería positiva; expresa admiración.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chingón / chingona', meaning: 'Alguien muy hábil, bueno o impresionante; también puede sonar presumido.', english: 'badass / awesome / really skilled', example: 'Esa fotógrafa es bien chingona.', exampleEnglish: 'That photographer is really badass.', note: 'Entre amigos puede ser un elogio.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Un chingo', meaning: 'Muchísimo o una gran cantidad.', english: 'a ton / loads / a hell of a lot', example: 'Había un chingo de gente.', exampleEnglish: 'There were tons of people.', note: 'Muy común e informal.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'A chingarle', meaning: 'Ponerse a trabajar o esforzarse.', english: 'get to work / get cracking', example: 'Ya se hizo tarde; ¡a chingarle!', exampleEnglish: 'It’s getting late; let’s get to work!', note: 'Vulgar, pero puede sonar motivador entre conocidos.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chinga tu madre', meaning: 'Insulto muy agresivo dirigido a la madre de alguien.', english: 'extremely offensive insult', example: 'No se enseña como frase para usar: es una agresión verbal.', exampleEnglish: 'This is not taught as a phrase to use: it is a verbal attack.', note: 'Evítala. Puede provocar una pelea.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Hijo de la chingada', meaning: 'Insulto fuerte; también expresa frustración ante una situación difícil.', english: 'son of a bitch / damn', example: '¡Hijo de la chingada, se me olvidaron las llaves!', exampleEnglish: 'Damn it, I forgot my keys!', note: 'Puede dirigirse a una persona o usarse como exclamación.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Vete a la chingada', meaning: 'Rechazar o correr a alguien con mucho enojo.', english: 'get the hell out / go to hell', example: 'Después de la discusión le dijo que se fuera a la chingada.', exampleEnglish: 'After the argument, he told them to go to hell.', note: 'Hostil; no es una despedida amistosa.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Estar de la chingada', meaning: 'Estar pésimo, en muy mal estado o ser insoportable.', english: 'to be awful / to suck', example: 'El tráfico está de la chingada.', exampleEnglish: 'Traffic is fucking awful.', note: 'Se usa mucho para situaciones y cosas.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Deja de estar chingando', meaning: 'Deja de molestar o fastidiar.', english: 'stop bothering me / quit messing around', example: 'Estoy trabajando; deja de estar chingando.', exampleEnglish: 'I’m working; stop bothering me.', note: 'Suena brusco y molesto.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'A la chingada', meaning: 'Expresión para abandonar algo, mandarlo lejos o expresar hartazgo.', english: 'to hell with it', example: 'Ya no sirve; ¡a la chingada!', exampleEnglish: 'It doesn’t work anymore; to hell with it!', note: 'Muy dependiente del tono.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Me vale madre', meaning: 'No me importa absolutamente nada.', english: 'I don’t give a damn', example: 'Me vale madre lo que opinen.', exampleEnglish: 'I don’t give a damn what they think.', note: 'Muy descortés en contextos formales.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Pendejo / pendeja', meaning: 'Persona tonta, ingenua o que actuó sin pensar.', english: 'idiot / dumbass', example: 'Fui un pendejo por dejar las llaves dentro.', exampleEnglish: 'I was an idiot for leaving the keys inside.', note: 'Insulto común, pero puede herir o iniciar una discusión.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Cabrón / cabrona', meaning: 'Puede ser insulto, elogio por habilidad o trato de confianza entre amigos.', english: 'bastard / badass / dude', example: '¡Qué cabrón eres para bailar!', exampleEnglish: 'You’re really damn good at dancing!', note: 'La relación y entonación son decisivas.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Culero / culera', meaning: 'Persona cruel, cobarde, abusiva o de mala fe.', english: 'asshole / nasty person', example: 'Fue muy culero que no avisara.', exampleEnglish: 'It was really shitty of them not to let us know.', note: 'Despectivo; úsalo con cuidado.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Ojete', meaning: 'Persona mezquina, abusiva o desagradable.', english: 'jerk / asshole', example: 'No seas ojete y comparte.', exampleEnglish: 'Don’t be an asshole; share.', note: 'Insulto fuerte, aunque coloquial.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Pinche', meaning: 'Prefijo que intensifica desprecio, enojo o frustración.', english: 'damn / freaking', example: 'Este pinche teléfono no prende.', exampleEnglish: 'This damn phone won’t turn on.', note: 'Puede ser leve entre amigos o agresivo según el tono.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Pinchurriento', meaning: 'Algo miserable, insignificante o de muy mala calidad.', english: 'crappy / lousy', example: 'Me vendieron un cable pinchurriento.', exampleEnglish: 'They sold me a really crappy cable.', note: 'Despectivo y coloquial.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Mamón / mamona', meaning: 'Persona presumida, antipática o que se comporta con superioridad.', english: 'stuck-up / obnoxious', example: 'No seas mamón, ven con nosotros.', exampleEnglish: 'Don’t be a jerk; come with us.', note: 'Entre amigos puede ser una llamada de atención juguetona.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Baboso / babosa', meaning: 'Tonto, distraído o ingenuo.', english: 'fool / dummy', example: '¡Qué baboso, olvidé mi cartera!', exampleEnglish: 'What an idiot—I forgot my wallet!', note: 'A menudo es menos agresivo que “pendejo”.', level: 'Suave', group: 'Insultos' },
+  { term: 'Lelo / lela', meaning: 'Alguien distraído, pasmado o lento para reaccionar.', english: 'blank / dazed / clueless', example: 'Se quedó lelo viendo el partido.', exampleEnglish: 'He sat there dazed, watching the game.', note: 'Más ligero y menos vulgar.', level: 'Suave', group: 'Insultos' },
+  { term: 'Zopenco', meaning: 'Persona torpe o poco lista.', english: 'blockhead / fool', example: 'No seas zopenco: lee las instrucciones.', exampleEnglish: 'Don’t be a blockhead; read the instructions.', note: 'Suena algo anticuado y menos vulgar.', level: 'Suave', group: 'Insultos' },
+  { term: 'Tarugo / taruga', meaning: 'Persona torpe o que no entiende algo.', english: 'dummy / blockhead', example: 'Ando bien tarugo hoy.', exampleEnglish: 'I’m being a bit of a dummy today.', note: 'Informal; puede ser burlón.', level: 'Suave', group: 'Insultos' },
+  { term: 'Codo / coda', meaning: 'Persona tacaña que evita gastar o compartir.', english: 'cheap / stingy', example: 'No seas codo, invita unos tacos.', exampleEnglish: 'Don’t be so cheap; buy us some tacos.', note: 'No es una grosería fuerte.', level: 'Suave', group: 'Insultos' },
+  { term: 'Naco / naca', meaning: 'Término clasista usado para llamar a alguien de mal gusto o poca educación.', english: 'tacky (classist insult)', example: 'Se registra para entenderlo, no para recomendar su uso.', exampleEnglish: 'Included so learners can recognize it, not as a recommendation to use it.', note: 'Puede ser clasista y discriminatorio. Evita usarlo para juzgar a personas.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Güey / wey', meaning: 'Forma muy común de decir “tipo”, “amigo” o “persona”; también puede ser insulto.', english: 'dude / guy / idiot', example: '¿Qué onda, güey? ¿Cómo estás?', exampleEnglish: 'What’s up, dude? How are you?', note: 'Entre amigos es cotidiano; con desconocidos puede sonar irrespetuoso.', level: 'Suave', group: 'Insultos' },
+  { term: 'No mames', meaning: 'Sorpresa, incredulidad, molestia o admiración.', english: 'no way / you’ve got to be kidding', example: '¡No mames! ¿Ganaste la rifa?', exampleEnglish: 'No way! Did you win the raffle?', note: 'Muy común e informal; evita usarla en ambientes formales.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'No manches', meaning: 'Versión más suave de “no mames”.', english: 'no way / come on', example: '¡No manches! Está increíble.', exampleEnglish: 'No way! That’s amazing.', note: 'Alternativa más segura y familiar.', level: 'Suave', group: 'Exclamaciones' },
+  { term: '¡A la madre!', meaning: 'Expresa sorpresa, susto o impresión.', english: 'holy crap / wow', example: '¡A la madre! Qué tan alto está.', exampleEnglish: 'Holy crap! That’s so high.', note: 'Muy coloquial; la intensidad depende del tono.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: '¡Ah, cabrón!', meaning: 'Sorpresa, incredulidad o admiración.', english: 'whoa / damn!', example: '¡Ah, cabrón! No sabía que tocabas guitarra.', exampleEnglish: 'Whoa, seriously! I didn’t know you played guitar.', note: 'Puede ser amistoso o confrontativo.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'Puta madre', meaning: 'Exclamación de frustración, dolor o enojo.', english: 'for fuck’s sake / damn it', example: '¡Puta madre! Se ponchó la llanta.', exampleEnglish: 'Damn it! The tire went flat.', note: 'Vulgar; no es apropiada en situaciones formales.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Híjole', meaning: 'Sorpresa, preocupación, pena o frustración; es una alternativa suave.', english: 'oh boy / gee', example: 'Híjole, creo que llegué tarde.', exampleEnglish: 'Oh man, I think I’m late.', note: 'No es una grosería; es una exclamación muy útil.', level: 'Suave', group: 'Exclamaciones' },
+  { term: 'Son mamadas', meaning: 'Califica algo como absurdo, injusto o ridículo.', english: 'that’s bullshit', example: 'Que cobren dos veces es una mamada.', exampleEnglish: 'Charging twice is bullshit.', note: 'Vulgar y confrontativo.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Qué poca madre', meaning: 'Crítica a una acción considerada abusiva, injusta o descarada.', english: 'that’s shameless / what a nerve', example: 'Qué poca madre que lo hayan dejado esperando.', exampleEnglish: 'How shitty of them to leave him waiting.', note: 'Fuerte; expresa indignación.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Vale madre', meaning: 'No sirve, no importa o está arruinado, según el contexto.', english: 'it’s worthless / it doesn’t matter', example: 'Con esta lluvia, el plan ya valió madre.', exampleEnglish: 'With this rain, the plan is completely screwed.', note: 'Vulgar y muy frecuente.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Valer verga', meaning: 'Fracasar, salir muy mal o no importar.', english: 'to suck / to be screwed', example: 'Mi celular ya vale verga: no enciende.', exampleEnglish: 'My phone is fucked; it won’t turn on.', note: 'Muy vulgar.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Está de huevos', meaning: 'Algo está excelente o es impresionante.', english: 'it’s fucking awesome', example: 'La comida de ese lugar está de huevos.', exampleEnglish: 'The food at that place is fucking great.', note: 'Vulgar, pero positivo en muchos contextos.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'Está bien verga', meaning: 'Algo o alguien es muy bueno, impresionante o hábil.', english: 'really badass / freaking great', example: 'Ese truco está bien verga.', exampleEnglish: 'That trick is badass.', note: 'Vulgar y presumido según el tono.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Verga', meaning: 'Vulgarismo para pene; también aparece en muchas expresiones.', english: 'dick / cock', example: 'La palabra aparece en expresiones como “valer verga”.', exampleEnglish: 'The word appears in expressions such as “valer verga” (to be screwed).', note: 'Muy vulgar; evita usarla con desconocidos.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'A vergazos', meaning: 'A golpes o mediante una pelea física.', english: 'with punches / by fighting', example: 'No arreglen el problema a vergazos.', exampleEnglish: 'Don’t try to solve the problem by beating each other up.', note: 'Alude a violencia física.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Culo', meaning: 'Trasero; en expresiones como “ser culo”, cobarde.', english: 'ass / coward (in some phrases)', example: 'No seas culo, atrévete a preguntar.', exampleEnglish: 'Don’t be a chicken; dare to ask.', note: 'Vulgar; el significado depende de la frase.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'Coger', meaning: 'En México suele significar tener relaciones sexuales; en otros países puede significar simplemente tomar o agarrar.', english: 'to have sex (Mexico) / to take or grab (elsewhere)', example: 'En México, “coger” puede tener una connotación sexual muy directa.', exampleEnglish: 'In Mexico, “coger” can have a very direct sexual meaning.', note: 'Falso amigo importante para visitantes; usa “tomar” o “agarrar” si quieres decir grab.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'Pedo', meaning: 'Puede significar flatulencia, problema, asunto, borrachera o situación.', english: 'fart / problem / deal / drunkenness', example: '¿Qué pedo? = What’s up? / ¿Cuál es el pedo? = What’s the issue?', exampleEnglish: '“¿Qué pedo?” = “What’s up?” / “¿Cuál es el pedo?” = “What’s the issue?”', note: 'La expresión completa determina el significado.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: '¿Qué pedo?', meaning: 'Saludo informal o pregunta sobre qué está pasando.', english: 'what’s up? / what’s going on?', example: '¿Qué pedo, güey? ¿Todo bien?', exampleEnglish: 'What’s up, dude? Everything good?', note: 'Muy informal; no la uses en entrevistas o con autoridad.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'No hay pedo', meaning: 'No hay problema; está bien.', english: 'no problem / it’s all good', example: 'No hay pedo, yo te espero.', exampleEnglish: 'No problem, I’ll wait for you.', note: 'Informal; alternativa neutra: “no hay problema”.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Hacerla de pedo', meaning: 'Armar una discusión, reclamar o causar problemas.', english: 'to make a fuss / kick up a stink', example: 'No la hagas de pedo por algo tan pequeño.', exampleEnglish: 'Don’t make a big deal out of something so small.', note: 'Puede sonar retador.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Estar pedo / peda', meaning: 'Estar borracho o bajo los efectos del alcohol.', english: 'to be drunk', example: 'Ayer se puso bien pedo en la fiesta.', exampleEnglish: 'He got really drunk at the party yesterday.', note: '“Peda” también puede referirse a una fiesta con alcohol.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'La peda', meaning: 'Fiesta o reunión donde se bebe alcohol.', english: 'drinking party / booze-up', example: '¿Vas a caerle a la peda el sábado?', exampleEnglish: 'Are you coming to the party on Saturday?', note: 'Muy coloquial.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Crudo / cruda', meaning: 'Tener resaca después de beber.', english: 'hungover', example: 'Estoy bien crudo; necesito agua y descansar.', exampleEnglish: 'I’m really hungover; I need water and rest.', note: '“Cruda” también nombra la resaca.', level: 'Suave', group: 'Pedo y fiesta' },
+  { term: 'Echar desmadre', meaning: 'Divertirse haciendo mucho ruido o causando caos.', english: 'to party / raise hell / make a mess', example: 'Fuimos al concierto a echar desmadre.', exampleEnglish: 'We went to the concert to party and go wild.', note: 'Puede ser diversión o desorden, según el contexto.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Desmadre', meaning: 'Caos, desorden, fiesta intensa o situación complicada.', english: 'mess / chaos / wild party', example: 'Se hizo un desmadre en la salida.', exampleEnglish: 'There was chaos at the exit.', note: 'Una de las palabras más versátiles del habla informal.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Pacheco / pacheca', meaning: 'Estar bajo los efectos de la marihuana.', english: 'high / stoned', example: 'En la película, el personaje está bien pacheco.', exampleEnglish: 'In the movie, the character is really high.', note: 'Referencia a cannabis; no implica aprobación de su consumo.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Echar cotorreo', meaning: 'Platicar, bromear y pasar el rato.', english: 'to chat / hang out and joke around', example: 'Vamos por un café a echar cotorreo.', exampleEnglish: 'Let’s grab a coffee and shoot the breeze.', note: 'Bastante amistosa y menos vulgar.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Hacerse pendejo', meaning: 'Fingir que no se entiende o evitar una responsabilidad.', english: 'to play dumb / pretend not to know', example: 'No te hagas pendejo: sí viste el mensaje.', exampleEnglish: 'Don’t play dumb: you did see the message.', note: 'Vulgar y acusatorio.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Hacerse güey', meaning: 'Hacerse el distraído o fingir que no se sabe algo.', english: 'to play dumb / act clueless', example: 'Se hizo güey y no pagó la cuenta.', exampleEnglish: 'He played dumb and didn’t pay the bill.', note: 'Muy común y menos fuerte que “hacerse pendejo”.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Hacerse bolas', meaning: 'Confundirse o enredarse al explicar o resolver algo.', english: 'to get confused / get mixed up', example: 'Me hice bolas con las instrucciones.', exampleEnglish: 'I got confused by the instructions.', note: 'No es una grosería; es una expresión cotidiana.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Pagar los platos rotos', meaning: 'Sufrir las consecuencias de un error que cometió otra persona.', english: 'to take the blame / pay for someone else’s mistake', example: 'Yo pagué los platos rotos por el retraso.', exampleEnglish: 'I took the blame for someone else’s delay.', note: 'Expresión idiomática, no vulgar.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Hacer de chivo los tamales', meaning: 'Engañar a alguien, especialmente a la pareja; expresión tradicional.', english: 'to cheat on someone / deceive', example: 'La frase se usa para hablar de una infidelidad.', exampleEnglish: 'The phrase is used to talk about infidelity.', note: 'Expresión regional y humorística; no todos la conocen.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Mandar al carajo', meaning: 'Rechazar a alguien o dejar de tolerar algo.', english: 'to tell someone to get lost / to hell with it', example: 'Mandó al carajo ese trabajo tóxico.', exampleEnglish: 'He told that toxic job to go to hell.', note: 'Grosero, pero menos fuerte que “mandar a la chingada”.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Ponerse las pilas', meaning: 'Activarse, concentrarse o empezar a esforzarse.', english: 'to get your act together / get moving', example: 'Ponte las pilas o vamos a llegar tarde.', exampleEnglish: 'Get your act together or we’ll be late.', note: 'No es grosería; es muy útil.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Me importa un carajo', meaning: 'No me importa en absoluto.', english: 'I don’t give a damn', example: 'Me importa un carajo lo que diga.', exampleEnglish: 'I don’t give a damn what they say.', note: 'Vulgar y desafiante.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Estar hasta la madre', meaning: 'Estar harto, saturado o en un lugar lleno.', english: 'to be fed up / packed to the brim', example: 'Estoy hasta la madre de este ruido.', exampleEnglish: 'I’m fed up with this noise.', note: 'Muy vulgar; el contexto cambia el sentido.', level: 'Muy fuerte', group: 'Otras expresiones' },
+  { term: 'Dar en la madre', meaning: 'Golpear, dañar o arruinar algo.', english: 'to beat up / wreck / mess up', example: 'Se me cayó y le di en la madre al teléfono.', exampleEnglish: 'I dropped it and completely wrecked the phone.', note: 'Vulgar; puede referirse a daño físico o material.', level: 'Muy fuerte', group: 'Otras expresiones' },
+  { term: 'A huevo', meaning: 'Sí, claro o por supuesto; también puede significar que algo se hace a la fuerza.', english: 'hell yeah / absolutely / by force', example: '¿Vienes con nosotros? —¡A huevo!', exampleEnglish: 'Are you coming with us? — Hell yeah!', note: 'Muy coloquial; evita confundirlo con un sí formal.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'De huevos', meaning: 'Excelente, genial o muy bueno.', english: 'awesome / freaking great', example: 'La película estuvo de huevos.', exampleEnglish: 'The movie was freaking awesome.', note: 'Vulgar aunque positivo.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Valemadrismo', meaning: 'Actitud de indiferencia total o despreocupación.', english: 'not-giving-a-damn attitude', example: 'Su valemadrismo desespera al equipo.', exampleEnglish: 'His don’t-care attitude drives the team crazy.', note: 'Sustantivo coloquial derivado de “valer madre”.', level: 'Muy fuerte', group: 'Otras expresiones' },
+  { term: 'Puto / puta', meaning: 'Insulto sexualizado; “puto” también se ha usado como insulto homofóbico.', english: 'whore / f-word (often homophobic when aimed at men)', example: 'Se incluye para reconocerlo en películas o conversaciones, no para insultar.', exampleEnglish: 'Included so learners can recognize it in films or conversations, not to insult anyone.', note: 'Puede ser misógino u homofóbico. Evita usarlo para referirte a personas.', level: 'Muy fuerte', group: 'Insultos' },
+  { term: 'Maricón', meaning: 'Insulto homofóbico usado para denigrar a hombres o cuestionar su masculinidad.', english: 'homophobic slur', example: 'Aprende a reconocerlo, pero no lo uses para dirigirte a alguien.', exampleEnglish: 'Learn to recognize it, but don’t use it to address someone.', note: 'Es un insulto discriminatorio; no es una forma inocente de decir “cobarde”.', level: 'Muy fuerte', group: 'Insultos' },
+  { term: 'Joto', meaning: 'Insulto homofóbico que se usa contra hombres gay o para burlarse de alguien.', english: 'homophobic slur', example: 'Se explica por comprensión cultural; no se recomienda repetirlo.', exampleEnglish: 'Explained for cultural understanding; it is not recommended to repeat it.', note: 'Ofensivo y discriminatorio.', level: 'Muy fuerte', group: 'Insultos' },
+  { term: 'Mierda', meaning: 'Excremento; también describe algo pésimo o una situación frustrante.', english: 'shit / crap', example: '¡Qué mierda de servicio!', exampleEnglish: 'What shitty service!', note: 'Vulgar en casi todos los contextos.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'De la fregada', meaning: 'Muy mal, pésimo o desagradable; versión más suave de “de la chingada”.', english: 'awful / really bad', example: 'El clima está de la fregada.', exampleEnglish: 'The weather is awful.', note: 'Buena alternativa si quieres evitar una grosería más fuerte.', level: 'Suave', group: 'Otras expresiones' },
+  { term: '¡Qué poca!', meaning: 'Reproche por una acción abusiva, descarada o injusta.', english: 'that’s outrageous / what a nerve', example: '¡Qué poca! Ni siquiera avisaron que cancelaban.', exampleEnglish: 'How rude! They didn’t even tell us they were cancelling.', note: 'Versión abreviada y menos explícita de “qué poca madre”.', level: 'Suave', group: 'Exclamaciones' },
+  { term: 'Chale', meaning: 'Expresa decepción, resignación o sorpresa desagradable.', english: 'damn / bummer / oh well', example: 'Chale, ya se acabaron los tacos.', exampleEnglish: 'Darn, the tacos are already gone.', note: 'Muy común y relativamente suave.', level: 'Suave', group: 'Exclamaciones' },
+  { term: 'Está cañón', meaning: 'Algo es difícil, intenso o impresionante.', english: 'that’s tough / intense / wild', example: 'Está cañón aprender tantos modismos.', exampleEnglish: 'Learning so many idioms is really tough.', note: 'No es grosería y se usa muchísimo.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Está cabrón', meaning: 'Algo es muy difícil, impresionante o complicado.', english: 'that’s tough / badass / intense', example: 'Está cabrón manejar en hora pico.', exampleEnglish: 'Driving in rush hour is really hard.', note: 'Más fuerte que “está cañón”; el sentido depende del tono.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Ni madres', meaning: 'Negación tajante: de ninguna manera o absolutamente nada.', english: 'hell no / absolutely nothing', example: '¿Vas a prestarle tu coche? —¡Ni madres!', exampleEnglish: 'Are you going to lend him your car? — No fucking way!', note: 'Muy vulgar y tajante.', level: 'Muy fuerte', group: 'Exclamaciones' },
+  { term: 'Ahorita no, joven', meaning: 'Respuesta informal para rechazar o posponer algo; a veces se dice con ironía.', english: 'not right now, buddy', example: 'Ahorita no, joven; estoy ocupado.', exampleEnglish: 'Not right now, young man; I’m busy.', note: 'No es grosería, pero puede sonar sarcástica.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Chale, qué pedo', meaning: 'Mezcla de decepción y desconcierto ante algo inesperado.', english: 'damn, what the hell?', example: 'Chale, ¿qué pedo con este tráfico?', exampleEnglish: 'Damn, what’s with this traffic?', note: 'Muy informal.', level: 'Fuerte', group: 'Exclamaciones' },
+  { term: 'No te pases de lanza', meaning: 'No abuses, no exageres o no cruces el límite.', english: 'don’t push it / don’t go too far', example: 'No te pases de lanza, esa era mi última rebanada.', exampleEnglish: 'Don’t be such a jerk; that was my last slice.', note: 'Informal y bastante útil.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Pasarse de verga', meaning: 'Excederse de manera abusiva, cruel o descarada.', english: 'to go way too far / be a total jerk', example: 'Se pasó de verga al cobrarles de más.', exampleEnglish: 'He really crossed the line by overcharging them.', note: 'Muy vulgar.', level: 'Muy fuerte', group: 'Otras expresiones' },
+  { term: 'Hacer un despapaye', meaning: 'Hacer un desorden o causar caos.', english: 'to make a mess / cause chaos', example: 'Los niños hicieron un despapaye en la sala.', exampleEnglish: 'The kids made a huge mess in the living room.', note: 'Más suave que “hacer un desmadre”.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Estar de poca madre', meaning: 'Ser excelente o muy agradable.', english: 'to be freaking great', example: 'La vista desde aquí está de poca madre.', exampleEnglish: 'The view from here is freaking amazing.', note: 'Expresión positiva pero vulgar.', level: 'Muy fuerte', group: 'Otras expresiones' },
+  { term: 'A toda madre', meaning: 'Muy bueno, agradable o excelente.', english: 'awesome / really great', example: 'La pasamos a toda madre.', exampleEnglish: 'We had an absolutely great time.', note: 'Vulgar, pero generalmente positivo.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Dar el avión', meaning: 'Fingir que escuchas o prestar atención sin hacerlo realmente.', english: 'to humor someone / pretend to listen', example: 'Le di el avión porque repetía lo mismo.', exampleEnglish: 'I just humored him because he kept repeating himself.', note: 'No es grosería; modismo muy mexicano.', level: 'Suave', group: 'Otras expresiones' },
+  { term: 'Echar la hueva', meaning: 'No hacer nada, descansar o estar sin ganas de trabajar.', english: 'to laze around / do nothing', example: 'El domingo me quedé echando la hueva.', exampleEnglish: 'I spent Sunday doing absolutely nothing.', note: 'Vulgar informal, pero común.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Huevón / huevona', meaning: 'Persona floja o perezosa.', english: 'lazybones / lazy person', example: 'No seas huevón y ayúdame a mover la mesa.', exampleEnglish: 'Don’t be lazy; help me move the table.', note: 'Puede ser insulto o broma entre amigos.', level: 'Fuerte', group: 'Insultos' },
+  { term: 'Hueva', meaning: 'Pereza, flojera o falta de ganas.', english: 'laziness / can’t be bothered', example: 'Me da hueva salir con esta lluvia.', exampleEnglish: 'I can’t be bothered to go out in this rain.', note: 'Muy común; menos agresiva que otras groserías.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Me da culo', meaning: 'Me da miedo o me intimida algo.', english: 'it freaks me out / I’m scared', example: 'Me da culo manejar de noche.', exampleEnglish: 'I’m scared to drive at night.', note: 'Muy coloquial y vulgar.', level: 'Fuerte', group: 'Otras expresiones' },
+  { term: 'Está de la verga', meaning: 'Algo está horrible o en muy mal estado.', english: 'it’s fucking awful', example: 'El servicio estuvo de la verga.', exampleEnglish: 'The service was fucking terrible.', note: 'Muy vulgar.', level: 'Muy fuerte', group: 'Otras expresiones' },
+  { term: 'Chingadazo', meaning: 'Golpe fuerte o caída aparatosa.', english: 'a hard hit / a nasty fall', example: 'Se dio un chingadazo con la puerta.', exampleEnglish: 'He slammed into the door.', note: 'Vulgar; puede aludir a violencia o accidente.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chingarse', meaning: 'Aguantarse algo, esforzarse mucho, dañarse o aprovecharse de alguien, según la construcción.', english: 'to put up with / work hard / get screwed', example: 'Me tuve que chingar dos horas de tráfico.', exampleEnglish: 'I had to endure two hours of traffic.', note: 'Verbo con varios sentidos; no traducir palabra por palabra.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Chingado / chingada', meaning: 'Adjetivo o exclamación para expresar enojo, frustración o intensidad.', english: 'damn / freaking', example: '¿Dónde chingados dejé el teléfono?', exampleEnglish: 'Where the hell did I leave my phone?', note: 'Muy informal y vulgar.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'A chingar a su madre', meaning: 'Expresión extremadamente agresiva para echar a alguien.', english: 'go fuck yourself / get the hell out', example: 'Se estudia para reconocer la agresión, no para usarla.', exampleEnglish: 'Studied so learners can recognize the aggressive phrase, not use it.', note: 'Muy ofensiva; puede escalar un conflicto.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Chingado sea', meaning: 'Exclamación de frustración.', english: 'damn it', example: '¡Chingado sea! Se fue la luz.', exampleEnglish: 'Damn it! The power went out.', note: 'Vulgar, pero menos directa que un insulto personal.', level: 'Fuerte', group: 'Chingar' },
+  { term: 'Me lleva la…', meaning: 'Exclamación incompleta o suavizada para expresar frustración sin decir el insulto completo.', english: 'for crying out loud / damn it', example: '¡Me lleva la…! Otra vez se descompuso.', exampleEnglish: 'For crying out loud! It broke down again.', note: 'A euphemistic fragment; the listener often understands the omitted vulgar ending.', level: 'Suave', group: 'Exclamaciones' },
+  { term: 'Qué poca madre', meaning: 'Reproche fuerte ante algo considerado injusto, abusivo o descarado.', english: 'that’s outrageous / what a nerve', example: 'Qué poca madre que le cobraran dos veces.', exampleEnglish: 'It’s outrageous that they charged him twice.', note: 'Puede expresar indignación; no es un elogio.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Estar hasta la madre', meaning: 'Estar harto, saturado o muy molesto con algo.', english: 'to be fed up / sick and tired', example: 'Estoy hasta la madre del ruido.', exampleEnglish: 'I’m sick and tired of the noise.', note: 'Muy vulgar. Describe hartazgo, no necesariamente una amenaza.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Valer madre', meaning: 'No tener importancia o salir muy mal, según el contexto.', english: 'to not matter a damn / to be screwed', example: 'Si no guardamos el archivo, va a valer madre el trabajo.', exampleEnglish: 'If we don’t save the file, all the work will be screwed.', note: 'El significado cambia con la construcción; aprende a reconocerlo antes de usarlo.', level: 'Muy fuerte', group: 'Chingar' },
+  { term: 'Qué pedo con…', meaning: 'Pregunta informal para expresar sorpresa, confusión o crítica sobre algo.', english: 'what’s up with…? / what the hell is going on with…?', example: '¿Qué pedo con el tráfico hoy?', exampleEnglish: 'What the hell is up with traffic today?', note: 'Muy informal y vulgar. Evítala en situaciones profesionales o con desconocidos.', level: 'Fuerte', group: 'Pedo y fiesta' },
+  { term: 'Andar de malas', meaning: 'Estar de mal humor.', english: 'to be in a bad mood', example: 'Hoy anda de malas; mejor hablamos después.', exampleEnglish: 'He’s in a bad mood today; let’s talk later.', note: 'No es una grosería, pero es una expresión cotidiana que suele aparecer junto al lenguaje fuerte.', level: 'Suave', group: 'Otras expresiones' },
+
 ];
 
 export default function Index() {
@@ -1056,12 +1474,14 @@ export default function Index() {
       setMistakeStreak(nextStreak);
       setTotalMistakes(nextTotal);
       setCoins((previous) => previous - nextStreak);
-      const achievement = nextTotal >= 25 ? 'GRINGO 🌵' : nextTotal >= 10 ? 'MEXICA-NO! 🇲🇽' : nextTotal >= 3 ? 'GUERO 😅' : '';
-      if (achievement && !negativeAchievements.includes(achievement)) {
-        const updated = [...negativeAchievements, achievement];
+      const newlyUnlocked = NEGATIVE_ACHIEVEMENTS.find(
+        (achievement) => nextTotal >= achievement.threshold && !negativeAchievements.includes(achievement.id)
+      );
+      if (newlyUnlocked) {
+        const updated = [...negativeAchievements, newlyUnlocked.id];
         setNegativeAchievements(updated);
-        AsyncStorage.setItem('mexicanSlangNegativeAchievements', JSON.stringify(updated)).catch(() => {});
-        setMexicanFeedbackMessage(`Logro negativo desbloqueado: ${achievement}`);
+        AsyncStorage.setItem('mexicanSlangNegativeAchievements', JSON.stringify(updated)).catch(() => { });
+        setMexicanFeedbackMessage(`Logro negativo desbloqueado: ${newlyUnlocked.name}`);
         setFeedbackModalVisible(true);
         return;
       }
@@ -1111,7 +1531,7 @@ export default function Index() {
   const [freeSubmitted, setFreeSubmitted] = useState(false);
   const [freeShowHint, setFreeShowHint] = useState(false);
   const [freeSessionXp, setFreeSessionXp] = useState(0);
-  type InteractiveLevel = 'beginner' | 'intermediate' | 'advanced';
+  type InteractiveLevel = InteractivePracticeLevel;
   const [interactiveLevel, setInteractiveLevel] = useState<InteractiveLevel | null>(null);
   const levels: InteractiveLevel[] = [
     'beginner',
@@ -1131,6 +1551,8 @@ export default function Index() {
   const [learnerLevel, setLearnerLevel] = useState('beginner');
   const [learnerGoal, setLearnerGoal] = useState('travel');
   const [learnerInterest, setLearnerInterest] = useState('food');
+  const [badWordSearch, setBadWordSearch] = useState('');
+  const [badWordGroup, setBadWordGroup] = useState('Todas');
   const { category } = useLocalSearchParams<{ category?: string }>();
   const router = useRouter();
   const rewardClaimed = useRef(false);
@@ -1341,10 +1763,24 @@ export default function Index() {
   useEffect(() => {
     AsyncStorage.getItem('mexicanSlangNegativeAchievements').then((saved) => {
       if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+        const aliases: Record<string, string> = {
+          'GUERO': 'GUERO 😅',
+          'MEXICA-NO!': 'MEXICA-NO! 🇲🇽',
+          'GABACHO': 'GABACHO 🧢',
+          'TACO BELL': 'TACO BELL 🌮',
+          'POCHITO': 'POCHITO 🐤',
+          'GRINGO': 'GRINGO 🌵',
+          'GRINGO 🤠': 'GRINGO 🌵',
+        };
         const validIds = new Set(NEGATIVE_ACHIEVEMENTS.map((item) => item.id));
-        setNegativeAchievements((JSON.parse(saved) as string[]).filter((id) => validIds.has(id)));
+        const migrated = Array.from(new Set(parsed.map((id) => aliases[id] || id).filter((id) => validIds.has(id))));
+        setNegativeAchievements(migrated);
+        if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
+          AsyncStorage.setItem('mexicanSlangNegativeAchievements', JSON.stringify(migrated)).catch(() => { });
+        }
       }
-    }).catch(() => {});
+    }).catch(() => { });
     AsyncStorage.getItem('mexicanSlangTotalMistakes').then((saved) => {
       if (saved) setTotalMistakes(Number(saved) || 0);
       setTotalMistakesLoaded(true);
@@ -1353,7 +1789,7 @@ export default function Index() {
 
   useEffect(() => {
     if (!totalMistakesLoaded) return;
-    AsyncStorage.setItem('mexicanSlangTotalMistakes', String(totalMistakes)).catch(() => {});
+    AsyncStorage.setItem('mexicanSlangTotalMistakes', String(totalMistakes)).catch(() => { });
   }, [totalMistakes, totalMistakesLoaded]);
 
 
@@ -2064,6 +2500,20 @@ export default function Index() {
           })}
 
           <Pressable
+            onPress={() => router.push({ pathname: '/', params: { category: 'badwords' } })}
+            style={{ backgroundColor: '#7F1D1D', borderRadius: 20, padding: 20, marginBottom: 18 }}
+          >
+            <Text style={{ color: '#FECACA', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>NEW · MEXICAN STREET LANGUAGE</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'bold', marginTop: 6 }}>🤬 Bad Words: las buenas groserías</Text>
+            <Text style={{ color: '#FEE2E2', fontSize: 14, lineHeight: 21, marginTop: 6 }}>
+              Aprende qué significan las groserías mexicanas, cómo cambian según el contexto y cuáles es mejor no repetir.
+            </Text>
+            <View style={{ alignSelf: 'flex-start', backgroundColor: '#FFFFFF', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, marginTop: 14 }}>
+              <Text style={{ color: '#7F1D1D', fontWeight: 'bold' }}>Explore bad words →</Text>
+            </View>
+          </Pressable>
+
+          <Pressable
             onPress={() => {
               setConversationScenario(0);
               setConversationStep(0);
@@ -2294,11 +2744,11 @@ export default function Index() {
                 ))}
               </ScrollView>
               <ScrollView showsVerticalScrollIndicator={false}>
-                {(selectedShopCategory === 'Logros' || (selectedShopCategory === 'Todos' && negativeAchievements.length > 0)) && (
+                {(selectedShopCategory === 'Logros' || selectedShopCategory === 'Todos') && (
                   <View>
-                    <Text style={{ color: '#991B1B', fontSize: 15, fontWeight: '900', marginBottom: 10 }}>{selectedShopCategory === 'Todos' ? 'Logros negativos desbloqueados 🤡' : 'Logros negativos desbloqueables 🤡'}</Text>
+                    <Text style={{ color: '#991B1B', fontSize: 15, fontWeight: '900', marginBottom: 10 }}>{selectedShopCategory === 'Todos' ? 'Logros negativos 🤡' : 'Logros negativos desbloqueables 🤡'}</Text>
                     <Text style={{ color: '#64748B', fontSize: 12, marginBottom: 12 }}>No se compran con monedas: se consiguen al acumular errores. Tus insignias desbloqueadas se guardan en tu perfil.</Text>
-                    {NEGATIVE_ACHIEVEMENTS.filter((achievement) => selectedShopCategory === 'Logros' || negativeAchievements.includes(achievement.id)).map((achievement) => {
+                    {NEGATIVE_ACHIEVEMENTS.map((achievement) => {
                       const isUnlocked = negativeAchievements.includes(achievement.id);
                       return (
                         <View key={achievement.id} style={{ backgroundColor: '#FFFFFF', borderRadius: 17, padding: 14, marginBottom: 11, borderWidth: 1.5, borderColor: isUnlocked ? achievement.border : '#E2E8F0', flexDirection: 'row', alignItems: 'center', opacity: isUnlocked ? 1 : 0.72 }}>
@@ -2307,8 +2757,11 @@ export default function Index() {
                           </View>
                           <View style={{ flex: 1, marginLeft: 12 }}>
                             <Text style={{ color: '#7F1D1D', fontWeight: '900', fontSize: 15 }}>{achievement.name}</Text>
-                            <Text style={{ color: '#475569', fontSize: 12, marginTop: 3 }}>{achievement.requirement}</Text>
-                            <Text style={{ color: '#64748B', fontSize: 11, marginTop: 4 }}>{achievement.description}</Text>
+                            <Text style={{ color: '#475569', fontSize: 12, fontWeight: '700', marginTop: 3 }}>English: {achievement.translation}</Text>
+                            <Text style={{ color: '#64748B', fontSize: 11, lineHeight: 16, marginTop: 4 }}>{achievement.explanation}</Text>
+                            <Text style={{ color: '#475569', fontSize: 12, marginTop: 6 }}>{achievement.requirement}</Text>
+                            <Text style={{ color: '#64748B', fontSize: 11, marginTop: 3 }}>{achievement.description}</Text>
+                    <Text style={{ color: '#64748B', fontSize: 11, marginTop: 2 }}>English: {achievement.descriptionTranslation}</Text>
                             <Text style={{ color: isUnlocked ? '#15803D' : '#B45309', fontWeight: '900', fontSize: 11, marginTop: 6 }}>{isUnlocked ? '✓ DESBLOQUEADO' : '🔒 BLOQUEADO'}</Text>
                           </View>
                         </View>
@@ -2346,6 +2799,87 @@ export default function Index() {
   }
 
 
+  if (category === 'badwords') {
+    const groups = ['Todas', 'Chingar', 'Insultos', 'Exclamaciones', 'Pedo y fiesta', 'Otras expresiones'];
+    const normalizedSearch = badWordSearch.trim().toLocaleLowerCase();
+    const visibleEntries = BAD_WORD_ENTRIES.filter((entry) =>
+      (badWordGroup === 'Todas' || entry.group === badWordGroup) &&
+      (!normalizedSearch || `${entry.term} ${entry.meaning} ${entry.english} ${entry.example}`.toLocaleLowerCase().includes(normalizedSearch))
+    );
+
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: '#FFF7F7' }} contentContainerStyle={{ padding: 18, paddingBottom: 45 }}>
+        <View style={{ backgroundColor: '#7F1D1D', borderRadius: 22, padding: 22, marginTop: 34, marginBottom: 18 }}>
+          <Pressable
+            onPress={() => router.setParams({ category: undefined })}
+            style={{ alignSelf: 'flex-start', marginBottom: 16, paddingVertical: 5 }}
+          >
+            <Text style={{ color: '#FECACA', fontWeight: '700' }}>← Back to MexicanSlang</Text>
+          </Pressable>
+          <Text style={{ fontSize: 34 }}>🤬 🇲🇽</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 28, fontWeight: '900', marginTop: 8 }}>Bad Words: las buenas groserías</Text>
+          <Text style={{ color: '#FEE2E2', fontSize: 14, lineHeight: 21, marginTop: 8 }}>
+            Mexican Spanish has some wonderfully expressive swear words. Learn what they mean, how locals use them, and when NOT to say them.
+          </Text>
+          <View style={{ backgroundColor: '#991B1B', borderRadius: 13, padding: 12, marginTop: 14 }}>
+            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13 }}>⚠️ Culture tip</Text>
+            <Text style={{ color: '#FEE2E2', fontSize: 12, lineHeight: 18, marginTop: 4 }}>
+              Some words are friendly between close friends but insulting with strangers. Slurs targeting sexual orientation or social class are explained for recognition, not recommended for use.
+            </Text>
+          </View>
+        </View>
+
+        <TextInput
+          value={badWordSearch}
+          onChangeText={setBadWordSearch}
+          placeholder="Search: chingar, pedo, no mames…"
+          placeholderTextColor="#94A3B8"
+          style={{ backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FECACA', borderRadius: 13, paddingHorizontal: 15, paddingVertical: 13, color: '#1F2937', fontSize: 15, marginBottom: 12 }}
+          autoCapitalize="none"
+        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, marginBottom: 15 }} contentContainerStyle={{ gap: 8, paddingRight: 8 }}>
+          {groups.map((group) => (
+            <Pressable key={group} onPress={() => setBadWordGroup(group)} style={{ backgroundColor: badWordGroup === group ? '#7F1D1D' : '#FFFFFF', borderWidth: 1, borderColor: badWordGroup === group ? '#7F1D1D' : '#FECACA', borderRadius: 20, paddingVertical: 9, paddingHorizontal: 13 }}>
+              <Text style={{ color: badWordGroup === group ? '#FFFFFF' : '#7F1D1D', fontSize: 12, fontWeight: '800' }}>{group}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+        <Text style={{ color: '#7F1D1D', fontWeight: '800', fontSize: 13, marginBottom: 10 }}>{visibleEntries.length} expressions · {BAD_WORD_ENTRIES.length} in the guide</Text>
+        {visibleEntries.map((entry) => (
+          <View key={entry.term} style={{ backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#FECACA', padding: 15, marginBottom: 11 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <Text style={{ flex: 1, color: '#7F1D1D', fontSize: 19, fontWeight: '900' }}>{entry.term}</Text>
+              <View style={{ backgroundColor: entry.level === 'Muy fuerte' ? '#FEE2E2' : entry.level === 'Fuerte' ? '#FEF3C7' : '#DCFCE7', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 20 }}>
+                <Text style={{ color: entry.level === 'Muy fuerte' ? '#991B1B' : entry.level === 'Fuerte' ? '#92400E' : '#166534', fontSize: 10, fontWeight: '900' }}>{entry.level.toUpperCase()}</Text>
+              </View>
+            </View>
+            <Text style={{ color: '#334155', fontSize: 14, lineHeight: 20, marginTop: 7 }}>{entry.meaning}</Text>
+            <Text style={{ color: '#1D4ED8', fontSize: 13, fontWeight: '700', marginTop: 8 }}>🇬🇧 {entry.english}</Text>
+            <View style={{ backgroundColor: '#FFF7ED', borderRadius: 10, padding: 10, marginTop: 10 }}>
+              <Text style={{ color: '#9A3412', fontSize: 11, fontWeight: '900' }}>EXAMPLE · ESPAÑOL</Text>
+              <Text style={{ color: '#7C2D12', fontSize: 13, lineHeight: 19, marginTop: 3 }}>{entry.example}</Text>
+              <View style={{ height: 1, backgroundColor: '#FED7AA', marginVertical: 9 }} />
+              <Text style={{ color: '#1D4ED8', fontSize: 11, fontWeight: '900' }}>🇬🇧 EXAMPLE · ENGLISH</Text>
+              <Text style={{ color: '#1E40AF', fontSize: 13, lineHeight: 19, marginTop: 3 }}>{entry.exampleEnglish}</Text>
+            </View>
+            <Text style={{ color: '#64748B', fontSize: 12, lineHeight: 18, marginTop: 9 }}>💡 {entry.note}</Text>
+            <Text style={{ color: '#94A3B8', fontSize: 10, marginTop: 8 }}>{entry.group}</Text>
+          </View>
+        ))}
+        {visibleEntries.length === 0 ? (
+          <View style={{ backgroundColor: '#FFFFFF', borderRadius: 15, padding: 22, alignItems: 'center' }}>
+            <Text style={{ fontSize: 28 }}>🔎</Text>
+            <Text style={{ color: '#7F1D1D', fontWeight: '800', marginTop: 8 }}>No expressions found</Text>
+            <Text style={{ color: '#64748B', fontSize: 13, marginTop: 4 }}>Try another word or choose “Todas”.</Text>
+          </View>
+        ) : null}
+        <Text style={{ color: '#94A3B8', fontSize: 11, lineHeight: 17, textAlign: 'center', marginTop: 12 }}>
+          Mexican slang varies by region, age, relationship and tone. English translations are approximate, not word-for-word equivalents.
+        </Text>
+      </ScrollView>
+    );
+  }
+
   if (category === 'conversation') {
     const scenario = conversationSteps[conversationScenario];
     const step = scenario.dialogue[conversationStep];
@@ -2368,7 +2902,7 @@ export default function Index() {
       if (option === step.correct) {
         setConversationCorrect((previous) => previous + 1);
         setXp((previous) => previous + 10);
-      earnCoins(1);
+        earnCoins(1);
       }
     }
 
@@ -2385,14 +2919,12 @@ export default function Index() {
         setConversationAnswer('');
         return;
       }
-      router.replace({ pathname: '/', params: { category: undefined } });
+      router.setParams({ category: undefined });
     }
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
-        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
-          <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to learning path</Text>
-        </Pressable>
+       <BackButton label="Back to home" />
 
         <View style={{ backgroundColor: '#115E59', borderRadius: 24, padding: 22, marginBottom: 18 }}>
           <Text style={{ color: '#99F6E4', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>CONVERSATION MODE</Text>
@@ -2512,14 +3044,12 @@ export default function Index() {
         resetFreeTurn();
         return;
       }
-      router.replace({ pathname: '/', params: { category: undefined } });
+      router.setParams({ category: undefined });
     }
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 9, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 16 }}>
-          <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to learning path</Text>
-        </Pressable>
+        <BackButton label="Back to home" />
 
         <View style={{ backgroundColor: '#1D4ED8', borderRadius: 24, padding: 22, marginBottom: 18 }}>
           <Text style={{ color: '#DBEAFE', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>FREE CONVERSATION · SPANISH PRACTICE</Text>
@@ -2539,7 +3069,7 @@ export default function Index() {
         </View>
 
         <View style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#DBEAFE' }}>
-          <Text style={{ color: '#1E3A8A', fontSize: 14, fontWeight: 'bold', marginBottom: 10 }}>Choose a real-life situation</Text>
+          <Text style={{ color: '#1E3A8A', fontSize: 14, fontWeight: 'bold', marginBottom: 10 }}>Choose a real-life situation · Try full, natural replies</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {personalizedScenarios.map((item, index) => (
               <Pressable key={item.id} onPress={() => { setFreeScenarioIndex(index); setFreeTurnIndex(0); resetFreeTurn(); }} style={{ backgroundColor: index === freeScenarioIndex ? '#1D4ED8' : '#EFF6FF', borderColor: index === freeScenarioIndex ? '#1D4ED8' : '#BFDBFE', borderWidth: 1, borderRadius: 20, paddingVertical: 9, paddingHorizontal: 12 }}>
@@ -2623,7 +3153,7 @@ export default function Index() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
         <Pressable
-          onPress={() => router.replace({ pathname: '/', params: { category: undefined } })}
+          onPress={() => router.setParams({ category: undefined })}
           style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}
         >
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
@@ -2734,7 +3264,7 @@ export default function Index() {
       } else if (reviewIndex >= reviewItems.length - 1) {
         setReviewIndex(0);
         setReviewSelectedAnswer('');
-        router.replace({ pathname: '/', params: { category: undefined } });
+        router.setParams({ category: undefined });
         return;
       } else {
         setReviewIndex((previous) => previous + 1);
@@ -2744,7 +3274,7 @@ export default function Index() {
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
-        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
+        <Pressable onPress={() => router.setParams({ category: undefined })} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Volver al inicio</Text>
         </Pressable>
 
@@ -2763,7 +3293,7 @@ export default function Index() {
             <Text style={{ color: '#475569', fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 8 }}>
               No tienes expresiones pendientes. Sigue practicando y las que falles aparecerán aquí.
             </Text>
-            <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ backgroundColor: '#14532D', borderRadius: 12, padding: 15, alignItems: 'center', alignSelf: 'stretch', marginTop: 20 }}>
+            <Pressable onPress={() => router.setParams({ category: undefined })} style={{ backgroundColor: '#14532D', borderRadius: 12, padding: 15, alignItems: 'center', alignSelf: 'stretch', marginTop: 20 }}>
               <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>Volver a aprender →</Text>
             </Pressable>
           </View>
@@ -2826,13 +3356,9 @@ export default function Index() {
   }
 
   if (category === 'interactivepractice') {
-    const levelItems = interactiveLevel === 'beginner'
-      ? interactivePracticeItems.slice(0, 15)
-      : interactiveLevel === 'intermediate'
-        ? interactivePracticeItems.slice(15, 30)
-        : interactiveLevel === 'advanced'
-          ? interactivePracticeItems.slice(30, 45)
-          : [];
+    const levelItems = interactiveLevel
+      ? interactivePracticeItems.filter((item) => getInteractiveExerciseLevel(item) === interactiveLevel)
+      : [];
     if (!interactiveLevel) {
       const levels = [
         { id: 'beginner', title: 'Beginner', subtitle: 'Basic words and everyday expressions', detail: 'Start with the essentials', color: '#16A34A' },
@@ -2841,7 +3367,7 @@ export default function Index() {
       ];
       return (
         <ScrollView style={styles.container} contentContainerStyle={styles.pageContent}>
-          <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', padding: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
+          <Pressable onPress={() => router.setParams({ category: undefined })} style={{ alignSelf: 'flex-start', padding: 12, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
             <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
           </Pressable>
           <Text style={{ color: '#1F2937', fontSize: 28, fontWeight: 'bold', marginBottom: 8 }}>Choose your level</Text>
@@ -2866,15 +3392,19 @@ export default function Index() {
             {levels.map((item) => {
               const stats = interactiveProgress.byLevel[item.id] ?? { attempts: 0, correct: 0 };
               const percent = stats.attempts ? Math.round((stats.correct / stats.attempts) * 100) : 0;
-              const completed = interactiveProgress.completedIds.filter((id) => id.startsWith(`${item.id}:`)).length;
+              const completed = interactiveProgress.completedIds.filter((savedId) => {
+                const exerciseId = savedId.slice(savedId.indexOf(':') + 1);
+                const savedExercise = interactivePracticeItems.find((exerciseItem) => exerciseItem.id === exerciseId);
+                return !!savedExercise && getInteractiveExerciseLevel(savedExercise) === item.id;
+              }).length;
               return (
                 <View key={`progress-${item.id}`} style={{ marginBottom: 10 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <Text style={{ color: '#334155', fontSize: 13, fontWeight: '600' }}>{item.title} · {completed}/15 completed</Text>
+                    <Text style={{ color: '#334155', fontSize: 13, fontWeight: '600' }}>{item.title} · {completed}/30 completed</Text>
                     <Text style={{ color: '#64748B', fontSize: 12 }}>{percent}% accuracy</Text>
                   </View>
                   <View style={{ height: 7, backgroundColor: '#EDE9FE', borderRadius: 8, overflow: 'hidden' }}>
-                    <View style={{ height: 7, width: `${(completed / 15) * 100}%`, backgroundColor: item.color, borderRadius: 8 }} />
+                    <View style={{ height: 7, width: `${(completed / 30) * 100}%`, backgroundColor: item.color, borderRadius: 8 }} />
                   </View>
                 </View>
               );
@@ -2898,7 +3428,7 @@ export default function Index() {
               <Text style={{ color: level.color, fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>{level.detail}</Text>
               <Text style={{ color: '#1F2937', fontSize: 22, fontWeight: 'bold', marginTop: 5 }}>{level.title}</Text>
               <Text style={{ color: '#475569', fontSize: 14, marginTop: 6 }}>{level.subtitle}</Text>
-              <Text style={{ color: level.color, fontWeight: 'bold', marginTop: 14 }}>15 exercises →</Text>
+              <Text style={{ color: level.color, fontWeight: 'bold', marginTop: 14 }}>30 exercises →</Text>
             </Pressable>
           ))}
         </ScrollView>
@@ -2907,26 +3437,26 @@ export default function Index() {
     const exercise = levelItems[interactiveIndex];
     const isLastExercise = interactiveIndex === levelItems.length - 1;
     if (interactiveLevel && !exercise) {
-  return (
-    <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
-      <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-        No se encontraron ejercicios
-      </Text>
-      <Text style={{ marginBottom: 20, textAlign: 'center' }}>
-        No hay ejercicios disponibles para este nivel o el índice está fuera de rango.
-      </Text>
-      <Pressable
-        onPress={() => {
-          setInteractiveIndex(0);
-          setInteractiveLevel(null);
-        }}
-        style={{ backgroundColor: '#14532D', padding: 14, borderRadius: 10 }}
-      >
-        <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>Volver a los niveles</Text>
-      </Pressable>
-    </View>
-  );
-}
+      return (
+        <View style={{ flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+            No se encontraron ejercicios
+          </Text>
+          <Text style={{ marginBottom: 20, textAlign: 'center' }}>
+            No hay ejercicios disponibles para este nivel o el índice está fuera de rango.
+          </Text>
+          <Pressable
+            onPress={() => {
+              setInteractiveIndex(0);
+              setInteractiveLevel(null);
+            }}
+            style={{ backgroundColor: '#14532D', padding: 14, borderRadius: 10 }}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>Volver a los niveles</Text>
+          </Pressable>
+        </View>
+      );
+    }
     const normalized = (value: string) => value.toLocaleLowerCase().replace(/[.!?¿¡,]/g, '').replace(/\\s+/g, ' ').trim();
     const submittedAnswer = exercise.type === 'choice'
       ? interactiveAnswer
@@ -3021,7 +3551,7 @@ export default function Index() {
 
     function nextInteractiveExercise() {
       if (isLastExercise) {
-        router.replace({ pathname: '/', params: { category: undefined } });
+        router.setParams({ category: undefined });
         return;
       }
       setInteractiveIndex((previous) => previous + 1);
@@ -3033,7 +3563,7 @@ export default function Index() {
 
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.pageContent} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.replace({ pathname: '/', params: { category: undefined } })} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
+        <Pressable onPress={() => router.setParams({ category: undefined })} style={{ alignSelf: 'flex-start', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, backgroundColor: '#E2E8F0', marginBottom: 18 }}>
           <Text style={{ color: '#334155', fontWeight: 'bold' }}>← Back to home</Text>
         </Pressable>
 
@@ -3044,7 +3574,7 @@ export default function Index() {
         <View style={{ backgroundColor: '#6D28D9', borderRadius: 22, padding: 22, marginBottom: 18 }}>
           <Text style={{ color: '#EDE9FE', fontSize: 12, fontWeight: 'bold', letterSpacing: 1 }}>MEXICAN SPANISH · SKILL BUILDER</Text>
           <Text style={{ color: '#FFFFFF', fontSize: 27, fontWeight: 'bold', marginTop: 8 }}>🎯 Interactive practice</Text>
-          <Text style={{ color: '#F5F3FF', fontSize: 14, lineHeight: 21, marginTop: 8 }}>Three ways to practice: choose the right answer, complete a phrase, or build a sentence.</Text>
+          <Text style={{ color: '#F5F3FF', fontSize: 14, lineHeight: 21, marginTop: 8 }}>Practice meaning, register, grammar, and natural phrasing. Some answers may look similar: choose the one that fits the situation, not just the dictionary translation.</Text>
           <View style={{ height: 7, backgroundColor: '#5B21B6', borderRadius: 8, overflow: 'hidden', marginTop: 16 }}>
             <View style={{ height: 7, width: `${((interactiveIndex + 1) / levelItems.length) * 100}%`, backgroundColor: '#FDE68A', borderRadius: 8 }} />
           </View>
